@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: processor-deployment
+  labels:
+    app: processor-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: processor-deployment
+  template:
+    metadata:
+      name: processor-deployment
+      labels:
+        app: processor-deployment
+    spec:
+      containers:
+        - name: processor-deployment
+          image: processor-image
+          imagePullPolicy: Never
+          env:
+            - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
+              value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
+      restartPolicy: Always
+

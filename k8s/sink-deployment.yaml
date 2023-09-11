@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sink-deployment
+  labels:
+    app: sink-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sink-deployment
+  template:
+    metadata:
+      name: sink-deployment
+      labels:
+        app: sink-deployment
+    spec:
+      containers:
+        - name: sink-deployment
+          image: sink-image
+          imagePullPolicy: Never
+          env:
+            - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
+              value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
+      restartPolicy: Always
+

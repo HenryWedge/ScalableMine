@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="MavenProjectsManager">
+    <option name="originalFiles">
+      <list>
+        <option value="$PROJECT_DIR$/pom.xml" />
+      </list>
+    </option>
+  </component>
+  <component name="PDMPlugin">
+    <option name="customRuleSets">
+      <list>
+        <option value="$PROJECT_DIR$/../../../../../work/tp-app\tp-setools\config\qa\pmd_ruleset.rules" />
+        <option value="$PROJECT_DIR$/../../../../../work/TEM/TRAVIC-Port/tp-app\tp-setools\config\qa\pmd_ruleset.rules" />
+        <option value="$PROJECT_DIR$/../../../../../work/port2/tp-app\tp-setools\config\qa\pmd_ruleset.rules" />
+        <option value="$PROJECT_DIR$/../../../../../work/Port/tp-app\tp-setools\config\qa\pmd_ruleset.rules" />
+        <option value="$USER_HOME$/Downloads/tp-app\tp-setools\config\qa\pmd_ruleset.rules" />
+      </list>
+    </option>
+    <option name="skipTestSources" value="false" />
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="temurin-17" project-jdk-type="JavaSDK" />
+</project>
