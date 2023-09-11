@@ -14,9 +14,9 @@
     </parent>
 
     <modules>
-        <module>usage-cost-logger</module>
-        <module>usage-cost-processor</module>
-        <module>usage-detail-sender</module>
+        <module>process-model-creator</module>
+        <module>process-mining-data-processor</module>
+        <module>sample-data-generator</module>
     </modules>
     <properties>
         <docker.org>springcloudstream</docker.org>

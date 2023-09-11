@@ -9,8 +9,8 @@
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>usage-cost-logger</artifactId>
-    <name>usage-cost-logger</name>
+    <artifactId>process-model-creator</artifactId>
+    <name>process-model-creator</name>
     <description>Demo project for Spring Boot</description>
 
     <repositories>

@@ -1,17 +1,17 @@
 #!/bin/sh
 
-echo "Start building usage-cost-logger"
-cd ../usage-cost-logger
+echo "Start building process-model-creator"
+cd ../process-model-generator
 mvn clean package
 docker build . -t sink-image
 
-echo "Start building usage-cost-processor"
-cd ../usage-cost-processor
+echo "Start building process-mining-data-processor"
+cd ../process-mining-data-processor
 mvn clean package
 docker build . -t processor-image-v2
 
-echo "Start building usage-detail-sender"
-cd ../usage-detail-sender
+echo "Start building sample-data-generator"
+cd ../sample-data-generator
 mvn clean package
 docker build . -t source-image
 

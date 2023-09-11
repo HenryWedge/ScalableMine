@@ -8,8 +8,8 @@
 		<version>0.0.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
-	<artifactId>usage-detail-sender</artifactId>
-	<name>usage-detail-sender</name>
+	<artifactId>sample-data-generator</artifactId>
+	<name>sample-data-generator</name>
 	<description>Demo project for Spring Boot</description>
 
 	<repositories>
