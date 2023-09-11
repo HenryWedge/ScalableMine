@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.spring.dataflow.sample</groupId>
-        <artifactId>usage-cost-stream-sample</artifactId>
+        <artifactId>ScalableMine</artifactId>
         <version>0.0.1-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
