@@ -1,23 +1,12 @@
-# Standalone Stream Sample
+# ScalableMine
 
-## Building the apps
-
-Use the appropriate binder profiles `kafka` (active by default) or `rabbit` to build a binary for use with that binder.
-
-```bash
-$./mvnw clean package -Pkafka
-```
-or
+This repository will test process mining algorithms due to its scalability.
+The benchmarking of the scalability is done with Theodolite.
+Run the following scripts to build the project, deploy it to kubernetes run and save the theodolite results. 
 
 ```bash
-$./mvnw clean package -Pkafka
+./build.sh
+./install-theodolite.sh
+./deploy.sh
+./save-results.sh
 ```
-
-## Building the distribution zip file
-
-```bash
-$./mvnw package -Pdist
-
-```
-
-This must be run from this directory and will build `dist/usage-cost-stream-sample.zip` 
