@@ -1,13 +1,7 @@
 package io.spring.dataflow.sample.usagedetailsender;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.file.FileSystems;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +12,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.deckfour.xes.in.XParser;
+import org.deckfour.xes.in.XesXmlParser;
+import org.deckfour.xes.model.XLog;
 import org.deckfour.xes.model.XTrace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +29,6 @@ import plg.generator.log.SimulationConfiguration;
 import plg.generator.process.ProcessGenerator;
 import plg.generator.process.RandomizationConfiguration;
 import plg.model.Process;
-
 @Configuration
 @EnableIntegration
 public class UsageDetailSender {
@@ -81,21 +77,13 @@ public class UsageDetailSender {
         };
     }
 
-    private static void fillEventLogWithGeneratedData(final List<Event> eventLog) throws Exception {
-        Process p = new Process("");
-        ProcessGenerator.randomizeProcess(p, RandomizationConfiguration.BASIC_VALUES);
-
-        LogGenerator logGenerator = new LogGenerator(p, new SimulationConfiguration(10000), new ProgressAdapter());
-        logGenerator
-            .generateLog()
+    private static void fillEventLogWithDataFromFile(final List<Event> eventLog) throws Exception {
+        readProcess()
             .stream()
+            .flatMap(Collection::stream)
             .map(UsageDetailSender::serializeXTrace)
             .flatMap(Collection::stream)
             .forEach(eventLog::add);
-    }
-
-    private static void fillEventLogWithDataFromFile(final List<Event> eventLog) throws Exception {
-        eventLog.addAll(readProcess());
     }
 
     private Map<String, Object> getHeaders(final int traceId) {
@@ -111,10 +99,13 @@ public class UsageDetailSender {
             .collect(Collectors.toList());
     }
 
-    private static List<Event> readProcess() throws IOException, ClassNotFoundException {
-        return (List<Event>) new ObjectInputStream(UsageDetailSender.class
-                                                       .getClassLoader()
-                                                       .getResourceAsStream("process_data.txt")).readObject();
+    private static List<XLog> readProcess() throws Exception {
+        XParser xesFileParser = new XesXmlParser();
+
+        return xesFileParser.parse(UsageDetailSender.class
+                                       .getClassLoader()
+                                       .getResourceAsStream("event-log.xes"));
+
     }
 
     private static void writeProcess() throws Exception {

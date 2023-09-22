@@ -40,9 +40,11 @@ public class UsageCostProcessor {
                 .get(0)
                 .getTraceId();
 
+            long startTime = System.currentTimeMillis();
             for ( Event event : events ) {
                 updateTraceIdAndDirectlyFollowsMap(directlyFollowsCountMap, traceIdEventMap, traceId, event);
             }
+            logger.info("Processing time: {}", (System.currentTimeMillis() - startTime));
 
             logMap("traceIdEventMap", traceIdEventMap);
 
@@ -119,10 +121,5 @@ public class UsageCostProcessor {
         } else {
             directlyFollowsCountMap.put(directlyFollowsRelation, 1);
         }
-    }
-
-    public static void main(String[] args) {
-        final UsageCostProcessor usageCostProcessor = new UsageCostProcessor();
-        usageCostProcessor.processUsageCost().apply(new GenericMessage<>(Collections.emptyList()));
     }
 }

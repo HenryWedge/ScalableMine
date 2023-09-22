@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Start building process-model-creator"
-cd ../process-model-generator
+cd ../process-model-creator
 mvn clean package
 docker build . -t sink-image
 
