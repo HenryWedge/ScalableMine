@@ -22,12 +22,12 @@ spec:
         - type: "ReplicaPatcher"
           resource: "processor-deployment.yaml"
   loadTypes:
-    - typeName: "NumSensors"
+    - typeName: "EventsPerSecond"
       patchers:
         - type: "EnvVarPatcher"
           resource: "source-deployment.yaml"
           properties:
-            variableName: "NUM_SENSORS"
+            variableName: "EVENTS_PER_SECOND"
             container: "source-container"
   slos:
     - name: "lag trend"
@@ -44,6 +44,9 @@ spec:
     topics:
       - name: "input"
         numPartitions: 5
+        replicationFactor: 1
+      - name: "output"
+        numPartitions: 1
         replicationFactor: 1
       - name: "theodolite-.*"
         removeOnly: True

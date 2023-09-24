@@ -24,31 +24,30 @@ public class UsageCostLogger {
     private static final Logger logger = LoggerFactory.getLogger(UsageCostLogger.class);
 
     @Bean
-    public Consumer<Message<List<Result>>> process() {
+    public Consumer<Message<Result>> process() {
         final Map<DirectlyFollows, Integer> resultMap = new HashMap<>();
 
         return resultListMsg ->
         {
-            List<Result> resultList = resultListMsg.getPayload();
-            resultList.forEach(result -> {
-                final DirectlyFollows directlyFollows = result.getDirectlyFollows();
-                if (resultMap.containsKey(directlyFollows)) {
-                    final Integer directlyFollowsCount = resultMap.get(directlyFollows);
-                    resultMap.put(directlyFollows, directlyFollowsCount + 1);
-                } else {
-                    resultMap.put(directlyFollows, 1);
-                }
-                resultMap.forEach((k, v) -> logger.info("{}: {}", k, v));
-                logger.info("-----------------------------------------");
-                logger.info("Causal events: \n");
-                findCausalEvents(resultMap).forEach(logDirectlyFollowingActions());
+            Result result = resultListMsg.getPayload();
 
-                logger.info("Parallel events: \n");
-                findParallelEvents(resultMap).forEach(logDirectlyFollowingActions());
+            final DirectlyFollows directlyFollows = result.getDirectlyFollows();
+            if (resultMap.containsKey(directlyFollows)) {
+                final Integer directlyFollowsCount = resultMap.get(directlyFollows);
+                resultMap.put(directlyFollows, directlyFollowsCount + 1);
+            } else {
+                resultMap.put(directlyFollows, 1);
+            }
+            resultMap.forEach((k, v) -> logger.info("{}: {}", k, v));
+            logger.info("-----------------------------------------");
+            logger.info("Causal events: \n");
+            findCausalEvents(resultMap).forEach(logDirectlyFollowingActions());
 
-                logger.info("Exclusive events: \n");
-                findChoiceEvents(resultMap).forEach(logDirectlyFollowingActions());
-            });
+            logger.info("Parallel events: \n");
+            findParallelEvents(resultMap).forEach(logDirectlyFollowingActions());
+
+            logger.info("Exclusive events: \n");
+            findChoiceEvents(resultMap).forEach(logDirectlyFollowingActions());
         };
     }
 

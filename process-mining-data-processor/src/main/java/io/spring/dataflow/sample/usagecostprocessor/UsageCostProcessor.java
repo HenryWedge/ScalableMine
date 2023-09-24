@@ -13,37 +13,35 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
-
 @Configuration
 public class UsageCostProcessor {
     private static final Logger logger = LoggerFactory.getLogger(UsageCostProcessor.class);
 
     private static final int BUCKET_SIZE = 20;
+
     private static final int RELEVANCE_THRESHOLD = 2;
 
     @Bean
-    public Function<Message<List<Event>>, Message<List<Result>>> processUsageCost() {
+    public Function<Message<Event>, Message<List<Result>>> processUsageCost() {
 
         final Map<DirectlyFollows, Integer> directlyFollowsCountMap = new HashMap<>();
         final Map<Integer, Event> traceIdEventMap = new HashMap<>();
 
         return eventList -> {
-            if (eventList
-                .getPayload()
-                .isEmpty()) {
-                logger.info("Finished");
-                return new GenericMessage<>(Collections.emptyList(), getHeaders());
-            }
+            //if (eventList
+            //    .getPayload()
+            //    .isEmpty()) {
+            //    logger.info("Finished");
+            //    return new GenericMessage<>(Collections.emptyList(), getHeaders());
+            //}
 
-            final List<Event> events = eventList.getPayload();
-            final int traceId = events
-                .get(0)
+            final Event event = eventList.getPayload();
+            final int traceId = event
                 .getTraceId();
 
             long startTime = System.currentTimeMillis();
-            for ( Event event : events ) {
-                updateTraceIdAndDirectlyFollowsMap(directlyFollowsCountMap, traceIdEventMap, traceId, event);
-            }
+
+            updateTraceIdAndDirectlyFollowsMap(directlyFollowsCountMap, traceIdEventMap, traceId, event);
             logger.info("Processing time: {}", (System.currentTimeMillis() - startTime));
 
             logMap("traceIdEventMap", traceIdEventMap);
@@ -56,8 +54,9 @@ public class UsageCostProcessor {
         };
     }
 
-    private static void updateTraceIdAndDirectlyFollowsMap(final Map<DirectlyFollows, Integer> directlyFollowsCountMap, final Map<Integer, Event> traceIdEventMap,
-                                  final int traceId, final Event event) {
+    private static void updateTraceIdAndDirectlyFollowsMap(final Map<DirectlyFollows, Integer> directlyFollowsCountMap,
+                                                           final Map<Integer, Event> traceIdEventMap,
+                                                           final int traceId, final Event event) {
         logger.info("Event {} received with trace {}", event.getActivity(), traceId);
         if (Objects.nonNull(traceIdEventMap.get(traceId))) {
             Event lastEvent = traceIdEventMap.get(traceId);
@@ -99,7 +98,11 @@ public class UsageCostProcessor {
     }
 
     private int determineDirectlyFollowsMapSize(final Map<DirectlyFollows, Integer> directlyFollowsCountMap) {
-        return directlyFollowsCountMap.values().stream().reduce(Integer::sum).orElse(0);
+        return directlyFollowsCountMap
+            .values()
+            .stream()
+            .reduce(Integer::sum)
+            .orElse(0);
     }
 
     private Map<String, Object> getHeaders() {

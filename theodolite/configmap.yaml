@@ -49,7 +49,7 @@ data:
         spec:
           containers:
             - name: processor-deployment
-              image: processor-image-v2
+              image: processor-image-2
               imagePullPolicy: Never
               resources:
                 requests:
@@ -61,6 +61,16 @@ data:
               env:
                 - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
                   value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
+                - name: RELEVANCE_THRESHOLD
+                  value: "2"
+                - name: BUCKET_SIZE
+                  value: "20"
+                - name: BOOTSTRAP_SERVER
+                  value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092 
+                - name: TOPIC_NAME
+                  value: input
+                - name: GROUP_ID
+                  value: input-group
           restartPolicy: Always
   source-deployment.yaml: |
     apiVersion: apps/v1
@@ -82,11 +92,17 @@ data:
         spec:
           containers:
             - name: source-container
-              image: source-image
+              image: source-image-2
               imagePullPolicy: Never
               env:
                 - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
                   value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
-                - name: NUM_SENSORS
+                - name: BOOTSTRAP_SERVER
+                  value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
+                - name: TOPIC_NAME
+                  value: input
+                - name: NUMBER_PARTITIONS
                   value: "5"
+                - name: EVENTS_PER_SECOND
+                  value: "10"
           restartPolicy: Always
