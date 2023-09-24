@@ -15,4 +15,15 @@ cd ../sample-data-generator
 mvn clean package
 docker build . -t source-image
 
+echo "Start building simple-data-generator"
+cd ../simple-data-generator
+mvn clean package
+docker build . -t source-image-2
+
+echo "Start building filter-processor"
+cd ../filter-processor
+mvn clean package
+docker build . -t processor-image-2
+
+
 echo "Finished"

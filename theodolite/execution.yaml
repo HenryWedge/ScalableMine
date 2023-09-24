@@ -5,16 +5,16 @@ metadata:
 spec:
   benchmark: "kafka-benchmark"
   load:
-    loadType: "NumSensors"
-    loadValues: [10, 20, 30]
+    loadType: "EventsPerSecond"
+    loadValues: [500, 1000]
   resources:
     resourceType: "Instances"
-    resourceValues: [1, 2, 4]
+    resourceValues: [1, 2, 4, 8, 16]
   slos:
     - name: "lag trend"
       properties:
         consumerGroup: input-group
-        threshold: 15
+        threshold: 1
   execution:
     metric: "demand"
     strategy:
@@ -22,9 +22,9 @@ spec:
       restrictions:
         - "LowerBound"
       searchStrategy: "LinearSearch"
-    duration: 250 # in seconds
+    duration: 180 # in seconds
     repetitions: 1
-    loadGenerationDelay: 60 # in seconds
+    loadGenerationDelay: 10 # in seconds
   #configOverrides:
   #- patcher:
   #    type: "NodeSelectorPatcher"

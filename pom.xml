@@ -17,6 +17,11 @@
         <module>process-model-creator</module>
         <module>process-mining-data-processor</module>
         <module>sample-data-generator</module>
+        <module>simple-data-generator</module>
+        <module>filter-processor</module>
+        <module>aggregation-processor</module>
+        <module>precision-checker</module>
+        <module>aggregation-sink</module>
     </modules>
     <properties>
         <docker.org>springcloudstream</docker.org>
