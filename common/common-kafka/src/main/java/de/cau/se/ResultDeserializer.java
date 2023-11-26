@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cau.se.datastructure.Result;
 import org.apache.kafka.common.serialization.Deserializer;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class ResultDeserializer implements Deserializer<Result> {
@@ -21,10 +22,12 @@ public class ResultDeserializer implements Deserializer<Result> {
                 System.out.println("Null received at deserializing");
                 return null;
             }
-            return objectMapper.readValue(new String(data, "UTF-8"), Result.class);
+            return objectMapper.readValue(new String(data, StandardCharsets.UTF_8), Result.class);
         } catch (Exception e) {
-            throw new RuntimeException("Error when deserializing byte[] to MessageDto");
+            e.printStackTrace();
+            //throw new RuntimeException("Error when deserializing byte[] to MessageDto");
         }
+        return null;
     }
 
     @Override

@@ -4,6 +4,4 @@ kubectl apply -f ../theodolite/benchmark.yaml
 kubectl apply -f ../theodolite/configmap.yaml
 kubectl apply -f ../theodolite/execution.yaml
 echo "Execution deployed. Listing all executions:"
-sleep 5
-kubectl get executions
 kubectl logs -l app=theodolite -c theodolite -f

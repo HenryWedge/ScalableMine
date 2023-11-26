@@ -21,9 +21,9 @@ public class FilterProcessorTest {
     private FilterProcessor testee;
 
     @Mock
-    private KafkaSender sender;
+    private AbstractProducer sender;
     @Mock
-    private KafkaEventConsumer consumer;
+    private KafkaConsumer consumer;
     private TraceIdMap traceIdMap;
     private DirectlyFollowsMap directlyFollowsMap;
 

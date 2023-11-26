@@ -3,3 +3,5 @@ docker push harbor.se.internal/hre/filter-processor:latest
 docker push harbor.se.internal/hre/aggregation-processor:latest
 docker push harbor.se.internal/hre/aggregation-sink:latest
 docker push harbor.se.internal/hre/filter-sink:latest
+docker push harbor.se.internal/hre/burattin-sink:latest
+docker push harbor.se.internal/hre/precision-checker:latest

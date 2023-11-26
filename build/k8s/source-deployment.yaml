@@ -1,28 +1,35 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: source-deployment
+  name: source
   labels:
-    app: source-deployment
+    app: source
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: source-deployment
+      app: source
   template:
     metadata:
-      name: source-deployment
+      name: source
       labels:
-        app: source-deployment
+        app: source
     spec:
       containers:
         - name: source-container
-          image: source-image
-          imagePullPolicy: Never
+          image: harbor.se.internal/hre/simple-data-generator:latest
+          imagePullPolicy: Always
           env:
             - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
-              value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
-            - name: NUM_SENSORS
-              value: "5"
+              value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+            - name: BOOTSTRAP_SERVER
+              value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+            - name: TOPIC_NAME
+              value: input
+            - name: NUMBER_PARTITIONS
+              value: "10"
+            - name: EVENTS_PER_SECOND
+              value: "10000000"
+            - name: EVENT_LOG_FILE_NAME
+              value: "process-model-3.xes"
       restartPolicy: Always
-

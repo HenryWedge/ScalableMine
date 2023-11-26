@@ -3,10 +3,12 @@ package de.cau.se.datastructure;
 import java.util.Objects;
 
 public class Gateway {
-
     private GatewayType gatewayType;
     private String connectingEvent;
     private BranchPair branchPair;
+
+    public Gateway() {
+    }
 
     public Gateway(final GatewayType gatewayType, final String connectingEvent, final BranchPair branchPair) {
         this.gatewayType = gatewayType;
@@ -38,5 +40,29 @@ public class Gateway {
                 ", connectingEvent='" + connectingEvent + '\'' +
                 ", branchPair=" + branchPair +
                 '}';
+    }
+
+    public GatewayType getGatewayType() {
+        return gatewayType;
+    }
+
+    public void setGatewayType(GatewayType gatewayType) {
+        this.gatewayType = gatewayType;
+    }
+
+    public String getConnectingEvent() {
+        return connectingEvent;
+    }
+
+    public void setConnectingEvent(String connectingEvent) {
+        this.connectingEvent = connectingEvent;
+    }
+
+    public BranchPair getBranchPair() {
+        return branchPair;
+    }
+
+    public void setBranchPair(BranchPair branchPair) {
+        this.branchPair = branchPair;
     }
 }

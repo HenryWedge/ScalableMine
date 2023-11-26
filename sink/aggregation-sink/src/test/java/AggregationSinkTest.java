@@ -7,14 +7,13 @@ import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.AggregationSink;
 import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.MinedProcessModel;
+import de.cau.se.processmodel.SmallProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,13 +21,9 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 // TODO here fix tests
 public class AggregationSinkTest {
-
     @Mock
     private Consumer<String, Result> consumer;
-
-    private Set<DirectlyFollows> causalDependencyMap;
-    private Set<Gateway> xorDependencyMap;
-    private Set<Gateway> parallelDependencyMap;
+    private MinedProcessModel processModel;
     private ResultMap resultMap;
     private AggregationSink testee;
     private ModelUpdater modelUpdater;
@@ -38,32 +33,33 @@ public class AggregationSinkTest {
     @BeforeEach
     void prepare() {
         openMocks(this);
-        causalDependencyMap = new HashSet<>();
-        xorDependencyMap = new HashSet<>();
-        parallelDependencyMap = new HashSet<>();
+
+        processModel = new MinedProcessModel();
         resultMap = new ResultMap();
-        modelUpdater = new ModelUpdater();
+
+        modelUpdater = new ModelUpdater(
+                0.5,
+                0.8,
+                processModel);
+
         eventRelationLogger = new EventRelationLogger();
         precisionChecker = new PrecisionChecker();
 
         testee = new AggregationSink(
                 consumer,
-                0.5,
-                0.8,
-                causalDependencyMap,
-                parallelDependencyMap,
-                xorDependencyMap,
                 resultMap,
-                modelUpdater,
+                new ModelUpdater(
+                        0.5,
+                        0.8,
+                        processModel),
                 eventRelationLogger,
-                precisionChecker);
+                precisionChecker,
+                new SmallProcessModel());
     }
 
     @AfterEach
     void tearDown() {
-        causalDependencyMap = null;
-        xorDependencyMap = null;
-        parallelDependencyMap = null;
+        processModel = null;
         resultMap = null;
         testee = null;
     }
@@ -74,12 +70,12 @@ public class AggregationSinkTest {
         testee.receive(new Result(new DirectlyFollows("B", "C"), 5));
         testee.receive(new Result(new DirectlyFollows("A", "D"), 7));
         testee.receive(new Result(new DirectlyFollows("D", "C"), 6));
-        assertEquals(4, causalDependencyMap.size());
-        assertTrue(xorDependencyMap.contains(new Gateway(Gateway.GatewayType.SPLIT, "A",new BranchPair( "B", "D"))));
-        assertTrue(xorDependencyMap.contains(new Gateway(Gateway.GatewayType.JOIN, "C", new BranchPair("B", "D"))));
+        assertEquals(4, processModel.getCausalEvents().size());
+        assertTrue(processModel.getChoiceGateways().contains(new Gateway(Gateway.GatewayType.SPLIT, "A", new BranchPair("B", "D"))));
+        assertTrue(processModel.getChoiceGateways().contains(new Gateway(Gateway.GatewayType.JOIN, "C", new BranchPair("B", "D"))));
 
-        assertEquals(2, xorDependencyMap.size());
-        assertEquals(0, parallelDependencyMap.size());
+        assertEquals(2, processModel.getChoiceGateways().size());
+        assertEquals(0, processModel.getParallelGateways().size());
     }
 
     @Test
@@ -91,11 +87,11 @@ public class AggregationSinkTest {
         testee.receive(new Result(new DirectlyFollows("A", "D"), 5));
         testee.receive(new Result(new DirectlyFollows("D", "C"), 5));
 
-        assertEquals(4, causalDependencyMap.size());
-        assertEquals(2, parallelDependencyMap.size());
-        assertTrue(parallelDependencyMap.contains(new Gateway(Gateway.GatewayType.JOIN, "C", new BranchPair("B", "D"))));
-        assertTrue(parallelDependencyMap.contains(new Gateway(Gateway.GatewayType.SPLIT, "A",new BranchPair("B", "D"))));
-        assertEquals(0, xorDependencyMap.size());
+        assertEquals(4, processModel.getCausalEvents().size());
+        assertEquals(2, processModel.getParallelGateways().size());
+        assertTrue(processModel.getParallelGateways().contains(new Gateway(Gateway.GatewayType.JOIN, "C", new BranchPair("B", "D"))));
+        assertTrue(processModel.getParallelGateways().contains(new Gateway(Gateway.GatewayType.SPLIT, "A", new BranchPair("B", "D"))));
+        assertEquals(0, processModel.getChoiceGateways().size());
     }
 
 }

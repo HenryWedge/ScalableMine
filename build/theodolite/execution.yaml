@@ -6,38 +6,44 @@ spec:
   benchmark: "kafka-benchmark"
   load:
     loadType: "EventsPerSecond"
-    loadValues: [10000]
+    loadValues: [30000, 31000, 32000, 33000, 34000, 35000, 120000]
   resources:
     resourceType: "Instances"
-    resourceValues: [1, 2, 4, 8]
+    resourceValues: [1, 2, 3, 4]
   slos:
     - name: "lag trend"
       properties:
-        consumerGroup: default
-        threshold: 1
+        consumerGroup: output-group
+        threshold: 1000
   execution:
-    metric: "demand"
+    metric: "capacity"
     strategy:
-      name: "RestrictionSearch"
+      name: "BinarySearch"
       restrictions:
         - "LowerBound"
-      searchStrategy: "FullSearch"
+      searchStrategy: "BinarySearch"
     duration: 120 # in seconds
     repetitions: 1
-    loadGenerationDelay: 10 # in seconds
-  #configOverrides:
-  #- patcher:
-  #    type: "NodeSelectorPatcher"
-  #    resource: "uc1-load-generator-deployment.yaml"
-  #    properties:
-  #      variableName: "env"
-  #    value: "prod"
-  # - patcher:
-  #     type: "NodeSelectorPatcher"
-  #     resource: "uc1-kstreams-deployment.yaml"
-  #     properties:
-  #       variableName: "env"
-  #   value: "prod"
+    loadGenerationDelay: 30 # in seconds
+  configOverrides:
+    - patcher:
+        type: "NodeSelectorPatcher"
+        resource: "processor-deployment.yaml"
+        properties:
+          variableName: "env"
+      value: "dev"
+    - patcher:
+        type: "NodeSelectorPatcher"
+        resource: "sink-deployment.yaml"
+        properties:
+          variableName: "env"
+      value: "dev"
+    - patcher:
+        type: "NodeSelectorPatcher"
+        resource: "source-deployment.yaml"
+        properties:
+          variableName: "env"
+      value: "dev"
   # - patcher:
   #     type: "ResourceLimitPatcher"
   #     resource: "uc1-kstreams-deployment.yaml"

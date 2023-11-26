@@ -1,7 +1,5 @@
 package de.cau.se;
 
-import de.cau.se.datastructure.Event;
-import de.cau.se.datastructure.Result;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.Producer;
@@ -9,26 +7,34 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.time.Duration;
 
-public abstract class AbstractProcessor {
+public abstract class AbstractProcessor<I,O> {
 
-    private final Producer<String, Result> producer;
+    private final Producer<String, O> producer;
 
-    private final Consumer<String, Event> consumer;
+    private final Consumer<String, I> consumer;
 
-    public AbstractProcessor(final Producer<String, Result> producer, final Consumer<String, Event> consumer) {
+    private int messagesSent = 0;
+
+    public AbstractProcessor(final Producer<String, O> producer, final Consumer<String, I> consumer) {
         this.producer = producer;
         this.consumer = consumer;
     }
 
-    protected abstract void receive(Event event);
+    protected abstract void receive(I input);
 
-    protected void send(Result sendData) {
-        producer.send(new ProducerRecord<>("output", sendData));
+    protected void send(O output) {
+        System.out.println("Result was sent");
+        messagesSent++;
+
+        producer.send(new ProducerRecord<>("output", output));
+        if (messagesSent % 1000 == 0) {
+            producer.flush();
+        }
     }
 
     public void run() {
         while (true) {
-            ConsumerRecords<String, Event> data = consumer.poll(Duration.ofMillis(100));
+            ConsumerRecords<String, I> data = consumer.poll(Duration.ofMillis(1000));
             data.forEach(record -> receive(record.value()));
         }
     }

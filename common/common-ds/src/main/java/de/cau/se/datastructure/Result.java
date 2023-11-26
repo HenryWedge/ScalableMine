@@ -2,7 +2,6 @@ package de.cau.se.datastructure;
 
 public class Result {
     private DirectlyFollows directlyFollows;
-
     private Integer count;
 
     public Result() {

@@ -8,9 +8,10 @@ import de.cau.se.map.TraceIdMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.stream.Stream;
+import java.util.List;
+import java.util.stream.Collectors;
 
-public class AggregationProcessor extends AbstractProcessor {
+public class AggregationProcessor extends AbstractProcessor<Event, Result> {
 
     private static final Logger log = LoggerFactory.getLogger(AggregationProcessor.class);
 
@@ -21,8 +22,8 @@ public class AggregationProcessor extends AbstractProcessor {
     private final Integer bucketSize;
 
 
-    public AggregationProcessor(final KafkaSender sender,
-                                final KafkaEventConsumer consumer,
+    public AggregationProcessor(final AbstractProducer<Result> sender,
+                                final KafkaConsumer<Event> consumer,
                                 final DirectlyFollowsMap directlyFollowsCountMap,
                                 final TraceIdMap traceIdEventMap,
                                 final Integer bucketSize) {
@@ -50,12 +51,13 @@ public class AggregationProcessor extends AbstractProcessor {
     }
 
     private void sendResultMessage() {
-        final Stream<Result> resultStream = directlyFollowsCountMap.entrySet().stream().map(entry -> new Result(entry.getKey(), entry.getValue()));
+        final List<Result> resultList = directlyFollowsCountMap.entrySet().stream().map(entry -> new Result(entry.getKey(), entry.getValue())).collect(Collectors.toList());
 
         System.out.println("Bucket filled. Clearing directly follows map");
         directlyFollowsCountMap.clear();
 
         System.out.println("Sending results");
-        resultStream.forEach(super::send);
+
+        resultList.forEach(super::send);
     }
 }

@@ -3,10 +3,10 @@ package de.cau.se.map;
 import de.cau.se.datastructure.DirectlyFollows;
 import de.cau.se.datastructure.Result;
 
-import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class ResultMap extends HashMap<DirectlyFollows, Integer> {
+public class ResultMap extends ConcurrentHashMap<DirectlyFollows, Integer> {
 
     public void accept(final Result result) {
         DirectlyFollows directlyFollows = result.getDirectlyFollows();
@@ -21,6 +21,6 @@ public class ResultMap extends HashMap<DirectlyFollows, Integer> {
     public void removeIrrelevantEvents(final Integer relevanceThreshold) {
         entrySet()
                 .stream()
-                .filter(entry -> entry.getValue() >= relevanceThreshold).forEach(entry -> remove(entry.getKey()));
+                .filter(entry -> entry.getValue() <= relevanceThreshold).forEach(entry -> remove(entry.getKey()));
     }
 }

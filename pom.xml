@@ -15,6 +15,8 @@
         <module>processor/aggregation-processor</module>
         <module>sink/aggregation-sink</module>
         <module>sink/filter-sink</module>
+        <module>sink/precision-checker</module>
+        <module>sink/burattin-sink</module>
     </modules>
 
     <dependencyManagement>

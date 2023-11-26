@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: precision-checker
+  labels:
+    app: precision-checker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: precision-checker
+  template:
+    metadata:
+      name: precision-checker
+      labels:
+        app: precision-checker
+    spec:
+      containers:
+        - name: precision-checker
+          image: harbor.se.internal/hre/precision-checker:latest
+          imagePullPolicy: Always
+      restartPolicy: Always

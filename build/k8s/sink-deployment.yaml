@@ -1,26 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sink-deployment
+  name: sink
   labels:
-    app: sink-deployment
+    app: sink
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sink-deployment
+      app: sink
   template:
     metadata:
-      name: sink-deployment
+      name: sink
       labels:
-        app: sink-deployment
+        app: sink
     spec:
       containers:
-        - name: sink-deployment
-          image: sink-image
-          imagePullPolicy: Never
+        - name: sink
+          image: harbor.se.internal/hre/filter-sink:latest
+          imagePullPolicy: Always
           env:
             - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
-              value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
+              value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+            - name: BOOTSTRAP_SERVER
+              value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+            - name: TOPIC_NAME
+              value: output
+            - name: GROUP_ID
+              value: output-group
+            - name: AND_THRESHOLD
+              value: "0.5"
+            - name: DEPENDENCY_THRESHOLD
+              value: "0.8"
+            - name: AGGREGATE_COUNT
+              value: "5"
+            - name: RELEVANCE_THRESHOLD
+              value: "10"
+            - name: PROCESS_MODEL_VARIANT
+              value: "2"
       restartPolicy: Always
-

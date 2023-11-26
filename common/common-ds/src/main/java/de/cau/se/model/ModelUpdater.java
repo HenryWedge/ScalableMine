@@ -5,73 +5,71 @@ import de.cau.se.datastructure.DirectlyFollows;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.map.ResultMap;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Function;
 
 public class ModelUpdater {
+    private final Double andThreshold;
+    private final Double dependencyThreshold;
+    private final MinedProcessModel processModel;
 
-    public void findCausalEvents(final Set<DirectlyFollows> causalEvents,
-                                 final ResultMap resultMap,
-                                 final Double dependencyThreshold,
+    public ModelUpdater(final Double andThreshold,
+                        final Double dependencyThreshold,
+                        final MinedProcessModel processModel) {
+        this.andThreshold = andThreshold;
+        this.dependencyThreshold = dependencyThreshold;
+        this.processModel = processModel;
+    }
+
+
+    public void findCausalEvents(final ResultMap resultMap,
                                  final DirectlyFollows newDiscoveredDirectlyFollows) {
-        if (causalEvents.contains(newDiscoveredDirectlyFollows)) {
-            return;
-        }
-        Integer directlyFollowsCount = resultMap.get(newDiscoveredDirectlyFollows);
-        Integer reverseDirectlyFollowsCount = resultMap.get(newDiscoveredDirectlyFollows.getSwapped());
+        final Integer directlyFollowsCount = resultMap.get(newDiscoveredDirectlyFollows);
+        final Integer reverseDirectlyFollowsCount = resultMap.get(newDiscoveredDirectlyFollows.getSwapped());
         if (directlyFollowsCount > ((reverseDirectlyFollowsCount * (1 + dependencyThreshold) + dependencyThreshold)) / (1 - dependencyThreshold)) {
-            causalEvents.add(newDiscoveredDirectlyFollows);
+            processModel.addCausalEvent(newDiscoveredDirectlyFollows);
+        } else {
+            //processModel.removeCausalEvent(newDiscoveredDirectlyFollows);
         }
     }
 
+    public void findCausalEvents(final ResultMap resultMap,
+                                 final Collection<DirectlyFollows> newDiscoveredDirectlyFollows) {
+        newDiscoveredDirectlyFollows.forEach(directlyFollows -> findCausalEvents(resultMap, directlyFollows));
+    }
+
     public void findSplits(final Set<String> frequentActivities,
-                           final Set<DirectlyFollows> causalEvents,
-                           final ResultMap resultMap,
-                           final Double andThreshold,
-                           final Set<Gateway> andSplits,
-                           final Set<Gateway> xorSplits) {
-        findGateway(frequentActivities,
-                causalEvents,
+                           final ResultMap resultMap) {
+        mineGateway(frequentActivities,
                 resultMap,
                 andThreshold,
-                andSplits,
-                xorSplits,
                 DirectlyFollows::getPredecessor,
                 DirectlyFollows::getSuccessor,
                 Gateway.GatewayType.SPLIT);
     }
 
     public void findJoins(final Set<String> frequentActivities,
-                          final Set<DirectlyFollows> causalEvents,
-                          final ResultMap resultMap,
-                          final Double andThreshold,
-                          final Set<Gateway> andJoins,
-                          final Set<Gateway> xorJoins) {
-        findGateway(frequentActivities,
-                causalEvents,
+                          final ResultMap resultMap) {
+        mineGateway(frequentActivities,
                 resultMap,
                 andThreshold,
-                andJoins,
-                xorJoins,
                 DirectlyFollows::getSuccessor,
                 DirectlyFollows::getPredecessor,
                 Gateway.GatewayType.JOIN);
     }
 
-    private void findGateway(final Set<String> frequentActivities,
-                             final Set<DirectlyFollows> causalEvents,
+    private void mineGateway(final Set<String> frequentActivities,
                              final ResultMap resultMap,
                              final Double andThreshold,
-                             final Set<Gateway> andGateways,
-                             final Set<Gateway> xorGateways,
                              final Function<DirectlyFollows, String> extractConnectingEvent,
                              final Function<DirectlyFollows, String> extractBranchEvent,
                              final Gateway.GatewayType gatewayType) {
 
         for (final String activity : frequentActivities) {
             final Set<DirectlyFollows> potentialSplits = new HashSet<>();
-            for (final DirectlyFollows directlyFollows : causalEvents) {
+            for (final DirectlyFollows directlyFollows : processModel.getCausalEvents()) {
                 if (activity.equals(extractConnectingEvent.apply(directlyFollows))) {
                     potentialSplits.add(directlyFollows);
                 }
@@ -80,24 +78,29 @@ public class ModelUpdater {
             for (final DirectlyFollows branch1 : potentialSplits) {
                 for (final DirectlyFollows branch2 : potentialSplits) {
 
-                    String connectingEvent = extractConnectingEvent.apply(branch1);
-                    String branchEvent1 = extractBranchEvent.apply(branch1);
-                    String branchEvent2 = extractBranchEvent.apply(branch2);
+                    final String connectingEvent = extractConnectingEvent.apply(branch1);
+                    final String branchEvent1 = extractBranchEvent.apply(branch1);
+                    final String branchEvent2 = extractBranchEvent.apply(branch2);
 
                     if (!branch1.equals(branch2) && !branchEvent1.equals(branchEvent2)) {
                         final double andMeasure = calculateAndMeasure(resultMap, branch1, branch2, branchEvent1, branchEvent2);
                         final Gateway newGateway = new Gateway(gatewayType, connectingEvent, new BranchPair(branchEvent1, branchEvent2));
                         final boolean isAndGateway = andMeasure >= andThreshold;
-                        addGatewayToSet(newGateway, isAndGateway ? andGateways : xorGateways, isAndGateway ? xorGateways : andGateways);
+                        addGatewayToSet(newGateway, isAndGateway);
                     }
                 }
             }
         }
     }
 
-    private static void addGatewayToSet(final Gateway newGateway, final Set<Gateway> setToAdd, final Set<Gateway> setToRemove) {
-        setToAdd.add(newGateway);
-        setToRemove.remove(newGateway);
+    private void addGatewayToSet(final Gateway newGateway, final boolean isAndGateway) {
+        if (isAndGateway) {
+            processModel.addAndGateway(newGateway);
+            processModel.removeXorGateway(newGateway);
+        } else {
+            processModel.addXorGateway(newGateway);
+            processModel.removeAndGateway(newGateway);
+        }
     }
 
     private static double calculateAndMeasure(final ResultMap resultMap,
@@ -112,5 +115,7 @@ public class ModelUpdater {
         return ((double) bc + cb) / (ab + ac + 1);
     }
 
-
+    public MinedProcessModel getProcessModel() {
+        return processModel;
+    }
 }

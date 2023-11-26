@@ -3,8 +3,11 @@ package de.cau.se.datastructure;
 import java.util.Objects;
 
 public class BranchPair {
-    private final String branch1;
-    private final String branch2;
+    private String branch1;
+    private String branch2;
+
+    public BranchPair() {
+    }
 
     public BranchPair(String branch1, String branch2) {
         this.branch1 = branch1;
@@ -39,5 +42,13 @@ public class BranchPair {
                 "branch1='" + branch1 + '\'' +
                 ", branch2='" + branch2 + '\'' +
                 '}';
+    }
+
+    public void setBranch1(String branch1) {
+        this.branch1 = branch1;
+    }
+
+    public void setBranch2(String branch2) {
+        this.branch2 = branch2;
     }
 }

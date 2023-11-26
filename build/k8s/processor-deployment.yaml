@@ -1,26 +1,42 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: processor-deployment
+  name: processor
   labels:
-    app: processor-deployment
+    app: processor
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: processor-deployment
+      app: processor
   template:
     metadata:
-      name: processor-deployment
+      name: processor
       labels:
-        app: processor-deployment
+        app: processor
     spec:
       containers:
-        - name: processor-deployment
-          image: processor-image
-          imagePullPolicy: Never
+        - name: processor
+          image: harbor.se.internal/hre/aggregation-processor:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
           env:
             - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
-              value: theodolite-kafka-kafka-bootstrap.default.svc.cluster.local:9092
+              value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+            - name: RELEVANCE_THRESHOLD
+              value: "2"
+            - name: BUCKET_SIZE
+              value: "200"
+            - name: BOOTSTRAP_SERVER
+              value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+            - name: TOPIC_NAME
+              value: input
+            - name: GROUP_ID
+              value: default
       restartPolicy: Always
-

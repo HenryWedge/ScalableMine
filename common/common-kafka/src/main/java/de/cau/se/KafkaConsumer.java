@@ -1,15 +1,14 @@
 package de.cau.se;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.util.Collections;
 import java.util.Properties;
 
-public class KafkaEventConsumer<T> extends KafkaConsumer<String, T> {
+public class KafkaConsumer<T> extends org.apache.kafka.clients.consumer.KafkaConsumer<String, T> {
 
-    public KafkaEventConsumer(final String bootstrapServers, final String topic, final String groupId, final Class<?> deserializerClazz) {
+    public KafkaConsumer(final String bootstrapServers, final String topic, final String groupId, final Class<?> deserializerClazz) {
         super(getProperties(bootstrapServers, groupId, deserializerClazz));
         super.subscribe(Collections.singletonList(topic));
         registerShutdownHook(this);
@@ -21,11 +20,12 @@ public class KafkaEventConsumer<T> extends KafkaConsumer<String, T> {
         properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializerClazz.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         return properties;
     }
 
-    private void registerShutdownHook(KafkaConsumer<String, T> consumer) {
+    private void registerShutdownHook(org.apache.kafka.clients.consumer.KafkaConsumer<String, T> consumer) {
         final Thread mainThread = Thread.currentThread();
         Runtime
                 .getRuntime()

@@ -6,7 +6,6 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class DirectlyFollows {
     private String predecessor;
-
     private String successor;
 
     public DirectlyFollows() {
@@ -23,14 +22,6 @@ public class DirectlyFollows {
 
     public String getSuccessor() {
         return successor;
-    }
-
-    public void setPredecessor(final String predecessor) {
-        this.predecessor = predecessor;
-    }
-
-    public void setSuccessor(final String successor) {
-        this.successor = successor;
     }
 
     @JsonIgnore

@@ -1,13 +1,19 @@
 package de.cau.se;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import de.cau.se.datastructure.Event;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.deckfour.xes.in.XParser;
 import org.deckfour.xes.in.XesXmlParser;
@@ -15,89 +21,85 @@ import org.deckfour.xes.model.XTrace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SimpleDataGenerator {
+/**
+ * This class is a load generator. It sends data from a xes-event log to a kafka topic.
+ * The messages are serialized as {@link de.cau.se.datastructure.Event}.
+ * The load can be adjusted by the eventsPerSecond-Parameter in the start method.
+ * Kafka specific configurations can be adjusted by topicName, numberOfPartitions, bootstrapServer
+ */
+public class SimpleDataGenerator extends AbstractProducer<Event> {
+
     private static final Logger log = LoggerFactory.getLogger(SimpleDataGenerator.class);
 
-    public void createEventLogAndSendEvents() throws Exception {
-        String topicName = System.getenv("TOPIC_NAME");
-
-        Properties props = getKafkaProperties();
-        Producer<String, Event> producer = new KafkaProducer(props);
-        final List<Event> eventLog = buildEventLog();
-        Integer numThreads = Integer.parseInt(System.getenv("NUM_THREADS"));
-        Integer numberPartitions = Integer.parseInt(System.getenv("NUMBER_PARTITIONS"));
-        Integer eventsPerSecond = Integer.parseInt(System.getenv("EVENTS_PER_SECOND"));
-        sendEvents(numThreads, topicName, producer, eventLog, numberPartitions, eventsPerSecond);
+    public SimpleDataGenerator(final String bootstrapServer, Class<?> serializerClazz) {
+        super(bootstrapServer, serializerClazz);
     }
 
-    private void sendEvents(final Integer numThreads,
-                            final String topicName,
-                            final Producer<String, Event> producer,
-                            final List<Event> eventLog,
-                            final Integer numberPartitions,
-                            final Integer eventsPerSecond) {
-        final Integer chunkSize = eventLog.size() / numThreads;
-        for (int i = 0; i < numThreads; i++) {
+    /**
+     * This method reads an xes-eventLog from the resources and sends them to a kafka topic
+     *
+     * @param topicName            name of the kafka topic where the events should be sent to
+     * @param numberPartitions     number of kafka partitions - needed for proper load balancing between the topics
+     * @param eventsPerSecond      adjusts the load produced
+     * @param eventLogResourcePath path of the event log xes file relative to the resource folder
+     * @throws Exception Kafka sending exceptions
+     */
+    public void start(final String topicName,
+                      final int numberPartitions,
+                      final int eventsPerSecond,
+                      final String eventLogResourcePath) throws Exception {
+        final List<Event> eventLog = buildEventLog(eventLogResourcePath);
 
-            new Thread(
-                    new SenderRunnable(numberPartitions,
-                                       eventsPerSecond,
-                                       topicName,
-                                       eventLog.subList(i * chunkSize, (i + 1) * chunkSize - 1),
-                                       producer),
-                    "thread-" + i)
-                    .start();
+        final List<Event> resultEventLog = new ArrayList<>();
+        for (int i = 0; i < 120; i++) {
+            resultEventLog.addAll(eventLog);
         }
+
+        sendEvents(resultEventLog, topicName, numberPartitions, eventsPerSecond);
     }
 
-    private List<Event> buildEventLog() throws Exception {
+    private void sendEvents(final List<Event> eventLog,
+                             final String topic,
+                             final int numberPartitions,
+                             final int eventsPerSecond) {
+
+        final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(4);
+        final AtomicInteger counter = new AtomicInteger(1000000 * getReplicaNumber().orElse(0));
+        final int periodBetweenSendActionsInNanoSeconds = 1000000000 / eventsPerSecond;
+
+        scheduledExecutorService.scheduleAtFixedRate(() ->
+        {
+            final Event event = eventLog.get(counter.incrementAndGet());
+            send(new ProducerRecord<>(topic, Math.abs(event.getTraceId() % numberPartitions),
+                    String.valueOf(event.getTraceId()),
+                    event));
+        }, 0L, periodBetweenSendActionsInNanoSeconds, TimeUnit.NANOSECONDS);
+    }
+
+    private static Optional<Integer> getReplicaNumber() {
+        final String hostname = System.getenv("HOSTNAME");
+        final Pattern pattern = Pattern.compile(".*-(\\d+)");
+        final Matcher matcher = pattern.matcher(hostname);
+        if (matcher.matches()) {
+            return Optional.of(Integer.parseInt(matcher.group(1).replace("-", "")));
+        }
+        return Optional.empty();
+    }
+
+    static List<Event> buildEventLog(final String eventLogResourcePath) throws Exception {
         XParser xesFileParser = new XesXmlParser();
 
         return xesFileParser
                 .parse(SimpleDataGenerator.class
                         .getClassLoader()
-                        .getResourceAsStream("process-model-2.xes"))
+                        .getResourceAsStream(eventLogResourcePath))
                 .stream()
                 .flatMap(Collection::stream)
-                .flatMap(trace -> serializeXTrace(trace).stream())
+                .flatMap(SimpleDataGenerator::serializeXTrace)
                 .collect(Collectors.toList());
     }
 
-    private static Properties getKafkaProperties() {
-        // create instance for properties to access producer configs
-        Properties props = new Properties();
-
-        //Assign localhost id
-        props.put("bootstrap.servers", System.getenv("BOOTSTRAP_SERVER"));
-
-        //Set acknowledgements for producer requests.
-        props.put("acks", "all");
-
-        //If the request fails, the producer can automatically retry,
-        props.put("retries", 0);
-
-        //Specify buffer size in config
-        props.put("batch.size", 16384);
-
-        //Reduce the no of requests less than 0
-        props.put("linger.ms", 1);
-
-        //The buffer.memory controls the total amount of memory available to the producer for buffering.
-        props.put("buffer.memory", 33554432);
-
-        props.put("key.serializer",
-                "org.apache.kafka.common.serialization.StringSerializer");
-
-        props.put("value.serializer",
-                "de.cau.se.EventSerializer");
-
-        return props;
-    }
-
-    private List<Event> serializeXTrace(final XTrace trace) {
-        return trace
-                .stream()
-                .map(event -> new Event(trace.hashCode(), event))
-                .collect(Collectors.toList());
+    private static Stream<Event> serializeXTrace(final XTrace trace) {
+        return trace.stream().map(event -> new Event(trace.hashCode(), event));
     }
 }

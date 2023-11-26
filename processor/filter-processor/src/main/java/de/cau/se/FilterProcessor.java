@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class FilterProcessor extends AbstractProcessor {
+public class FilterProcessor extends AbstractProcessor<Event, Result> {
 
     private static final Logger log = LoggerFactory.getLogger(FilterProcessor.class);
 
@@ -23,8 +23,8 @@ public class FilterProcessor extends AbstractProcessor {
 
     private final Integer relevanceThreshold;
 
-    public FilterProcessor(final KafkaSender sender,
-                           final KafkaEventConsumer consumer,
+    public FilterProcessor(final AbstractProducer<Result> sender,
+                           final KafkaConsumer<Event> consumer,
                            final DirectlyFollowsMap directlyFollowsCountMap,
                            final TraceIdMap traceIdEventMap,
                            final Integer bucketSize,
@@ -45,8 +45,6 @@ public class FilterProcessor extends AbstractProcessor {
     }
 
     private void updateTraceIdAndDirectlyFollowsMap(final Event event) {
-        System.out.printf("Event %s received with trace %d", event.getActivity(), event.getTraceId());
-
         final Event lastEvent = traceIdEventMap.accept(event);
         if (lastEvent != null) {
             directlyFollowsCountMap.accept(new DirectlyFollows(lastEvent.getActivity(), event.getActivity()));
