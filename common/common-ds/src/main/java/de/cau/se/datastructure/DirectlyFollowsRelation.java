@@ -4,14 +4,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class DirectlyFollows {
+public class DirectlyFollowsRelation {
     private String predecessor;
     private String successor;
 
-    public DirectlyFollows() {
+    public DirectlyFollowsRelation() {
     }
 
-    public DirectlyFollows(final String predecessor, final String successor) {
+    public DirectlyFollowsRelation(final String predecessor, final String successor) {
         this.predecessor = predecessor;
         this.successor = successor;
     }
@@ -25,8 +25,8 @@ public class DirectlyFollows {
     }
 
     @JsonIgnore
-    public DirectlyFollows getSwapped() {
-        return new DirectlyFollows(this.successor, this.predecessor);
+    public DirectlyFollowsRelation getSwapped() {
+        return new DirectlyFollowsRelation(this.successor, this.predecessor);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class DirectlyFollows {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        final DirectlyFollows that = (DirectlyFollows) o;
+        final DirectlyFollowsRelation that = (DirectlyFollowsRelation) o;
 
         return new EqualsBuilder()
             .append(predecessor, that.predecessor)

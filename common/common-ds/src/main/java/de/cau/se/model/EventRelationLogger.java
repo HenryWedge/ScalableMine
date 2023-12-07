@@ -1,11 +1,7 @@
 package de.cau.se.model;
 
 
-import de.cau.se.datastructure.DirectlyFollows;
-import de.cau.se.datastructure.Gateway;
 import de.cau.se.processmodel.ProcessModel;
-
-import java.util.Set;
 
 public class EventRelationLogger {
 

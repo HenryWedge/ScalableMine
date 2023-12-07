@@ -1,11 +1,10 @@
 import de.cau.se.AbstractProducer;
-import de.cau.se.AggregationProcessorVersion2;
+import de.cau.se.AggregationProcessor;
 import de.cau.se.KafkaConsumer;
-import de.cau.se.datastructure.DirectlyFollows;
 import de.cau.se.datastructure.Event;
-import de.cau.se.map.DirectlyFollowsMap;
-import de.cau.se.map.ResultMap;
-import de.cau.se.map.TraceIdMap;
+import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
+import de.cau.se.map.result.ResultMap;
+import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdater;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static javatests.TestSupport.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -22,20 +20,20 @@ import static org.mockito.MockitoAnnotations.openMocks;
 @ExtendWith(MockitoExtension.class)
 public class FilterProcessorTest {
 
-    private AggregationProcessorVersion2 testee;
+    private AggregationProcessor testee;
     @Mock
     private AbstractProducer sender;
     @Mock
     private KafkaConsumer consumer;
     private TraceIdMap traceIdMap;
-    private DirectlyFollowsMap directlyFollowsMap;
+    private DirectlyFollowsRelationCountMap directlyFollowsRelationCountMap;
 
     @BeforeEach
     void prepare() {
         openMocks(this);
         traceIdMap = new TraceIdMap();
-        directlyFollowsMap = new DirectlyFollowsMap();
-        testee = new AggregationProcessorVersion2(sender, consumer, directlyFollowsMap, traceIdMap, 3, new ResultMap(), new ModelUpdater(0.5d, 0.8d, new MinedProcessModel()));
+        directlyFollowsRelationCountMap = new DirectlyFollowsRelationCountMap();
+        testee = new AggregationProcessor(sender, consumer, directlyFollowsRelationCountMap, traceIdMap, 3, new ResultMap(), new ModelUpdater(0.5d, 0.8d, new MinedProcessModel(), new ResultMap()));
     }
 
     @Test

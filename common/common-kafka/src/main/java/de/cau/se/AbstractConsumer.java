@@ -14,7 +14,7 @@ public abstract class AbstractConsumer<T> {
         this.consumer = consumer;
     }
 
-    protected abstract void receive(T event);
+    public abstract void receive(T event);
 
     public void run() {
         while (true) {

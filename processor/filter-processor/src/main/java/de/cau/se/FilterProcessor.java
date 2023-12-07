@@ -1,10 +1,10 @@
 package de.cau.se;
 
-import de.cau.se.datastructure.DirectlyFollows;
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
 import de.cau.se.datastructure.Result;
-import de.cau.se.map.DirectlyFollowsMap;
-import de.cau.se.map.TraceIdMap;
+import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
+import de.cau.se.map.trace.TraceIdMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ public class FilterProcessor extends AbstractProcessor<Event, Result> {
 
     private static final Logger log = LoggerFactory.getLogger(FilterProcessor.class);
 
-    private final DirectlyFollowsMap directlyFollowsCountMap;
+    private final DirectlyFollowsRelationCountMap directlyFollowsCountMap;
 
     private final TraceIdMap traceIdEventMap;
 
@@ -25,7 +25,7 @@ public class FilterProcessor extends AbstractProcessor<Event, Result> {
 
     public FilterProcessor(final AbstractProducer<Result> sender,
                            final KafkaConsumer<Event> consumer,
-                           final DirectlyFollowsMap directlyFollowsCountMap,
+                           final DirectlyFollowsRelationCountMap directlyFollowsCountMap,
                            final TraceIdMap traceIdEventMap,
                            final Integer bucketSize,
                            final Integer relevanceThreshold) {
@@ -45,9 +45,9 @@ public class FilterProcessor extends AbstractProcessor<Event, Result> {
     }
 
     private void updateTraceIdAndDirectlyFollowsMap(final Event event) {
-        final Event lastEvent = traceIdEventMap.accept(event);
-        if (lastEvent != null) {
-            directlyFollowsCountMap.accept(new DirectlyFollows(lastEvent.getActivity(), event.getActivity()));
+        final String lastActivity = traceIdEventMap.accept(event.getTraceId(), event.getActivity());
+        if (lastActivity != null) {
+            directlyFollowsCountMap.accept(new DirectlyFollowsRelation(lastActivity, event.getActivity()));
         }
     }
 

@@ -8,6 +8,7 @@ public class PrecisionChecker {
 
     public Double calculatePrecision(final ProcessModel expectedprocessModel, final ProcessModel minedProcessModel) {
 
+
         long causalMatches = countMatches(minedProcessModel.getCausalEvents(), expectedprocessModel.getCausalEvents());
         long parallelMatches = countMatches(minedProcessModel.getParallelGateways(), expectedprocessModel.getParallelGateways());
         long xorMatches = countMatches(minedProcessModel.getChoiceGateways(), expectedprocessModel.getChoiceGateways());

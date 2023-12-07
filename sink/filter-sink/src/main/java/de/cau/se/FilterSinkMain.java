@@ -1,10 +1,7 @@
 package de.cau.se;
 
-import de.cau.se.map.ResultMap;
 import de.cau.se.model.*;
 import de.cau.se.processmodel.ProcessModelFactory;
-
-import java.util.HashSet;
 
 public class FilterSinkMain {
 
@@ -16,20 +13,7 @@ public class FilterSinkMain {
         final Integer aggregateCount = Integer.parseInt(System.getenv("AGGREGATE_COUNT"));
         final int processModelVersion = Integer.parseInt(System.getenv("PROCESS_MODEL_VARIANT"));
 
-        //final FilterSink filterSink = new FilterSink(
-        //        new KafkaConsumer<>(bootstrapServer, topic, groupId, ResultDeserializer.class),
-        //        relevanceThreshold,
-        //        aggregateCount,
-        //        new HashSet<>(),
-        //        new ResultMap(),
-        //        new ModelUpdater(andThreshold,
-        //                dependencyThreshold,
-        //                new MinedProcessModel()),
-        //        new EventRelationLogger(),
-        //        new PrecisionChecker(),
-        //        ProcessModelFactory.create(processModelVersion));
-
-        final FilterSink2 filterSink = new FilterSink2(
+        final FilterSink filterSink = new FilterSink(
                 new KafkaConsumer<>(bootstrapServer, topic, groupId, ProcessModelDeserializer.class),
                 relevanceThreshold,
                 aggregateCount,

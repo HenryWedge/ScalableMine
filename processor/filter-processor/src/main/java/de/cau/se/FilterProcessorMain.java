@@ -1,7 +1,7 @@
 package de.cau.se;
 
-import de.cau.se.map.DirectlyFollowsMap;
-import de.cau.se.map.TraceIdMap;
+import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
+import de.cau.se.map.trace.TraceIdMap;
 
 public class FilterProcessorMain {
     public static void main(String[] args) {
@@ -14,7 +14,7 @@ public class FilterProcessorMain {
         new FilterProcessor(
                 new AbstractProducer<>(bootstrapServer, ResultSerializer.class),
                 new KafkaConsumer<>(bootstrapServer, topic, groupId, EventDeserializer.class),
-                new DirectlyFollowsMap(),
+                new DirectlyFollowsRelationCountMap(),
                 new TraceIdMap(),
                 bucketSize,
                 relevanceThreshold).run();

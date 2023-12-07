@@ -1,11 +1,11 @@
+import de.cau.se.AggregationSink;
 import de.cau.se.datastructure.BranchPair;
-import de.cau.se.datastructure.DirectlyFollows;
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.datastructure.Result;
-import de.cau.se.map.ResultMap;
+import de.cau.se.map.result.ResultMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.PrecisionChecker;
-import de.cau.se.AggregationSink;
 import de.cau.se.model.ModelUpdater;
 import de.cau.se.model.MinedProcessModel;
 import de.cau.se.processmodel.SmallProcessModel;
@@ -19,14 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-// TODO here fix tests
 public class AggregationSinkTest {
     @Mock
     private Consumer<String, Result> consumer;
     private MinedProcessModel processModel;
     private ResultMap resultMap;
     private AggregationSink testee;
-    private ModelUpdater modelUpdater;
     private EventRelationLogger eventRelationLogger;
     private PrecisionChecker precisionChecker;
 
@@ -37,21 +35,19 @@ public class AggregationSinkTest {
         processModel = new MinedProcessModel();
         resultMap = new ResultMap();
 
-        modelUpdater = new ModelUpdater(
-                0.5,
-                0.8,
-                processModel);
-
         eventRelationLogger = new EventRelationLogger();
         precisionChecker = new PrecisionChecker();
 
         testee = new AggregationSink(
                 consumer,
                 resultMap,
+                2,
+                1,
                 new ModelUpdater(
                         0.5,
                         0.8,
-                        processModel),
+                        processModel,
+                        new ResultMap()),
                 eventRelationLogger,
                 precisionChecker,
                 new SmallProcessModel());
@@ -66,10 +62,10 @@ public class AggregationSinkTest {
 
     @Test
     public void testXor() {
-        testee.receive(new Result(new DirectlyFollows("A", "B"), 5));
-        testee.receive(new Result(new DirectlyFollows("B", "C"), 5));
-        testee.receive(new Result(new DirectlyFollows("A", "D"), 7));
-        testee.receive(new Result(new DirectlyFollows("D", "C"), 6));
+        testee.receive(new Result(new DirectlyFollowsRelation("A", "B"), 5));
+        testee.receive(new Result(new DirectlyFollowsRelation("B", "C"), 5));
+        testee.receive(new Result(new DirectlyFollowsRelation("A", "D"), 7));
+        testee.receive(new Result(new DirectlyFollowsRelation("D", "C"), 6));
         assertEquals(4, processModel.getCausalEvents().size());
         assertTrue(processModel.getChoiceGateways().contains(new Gateway(Gateway.GatewayType.SPLIT, "A", new BranchPair("B", "D"))));
         assertTrue(processModel.getChoiceGateways().contains(new Gateway(Gateway.GatewayType.JOIN, "C", new BranchPair("B", "D"))));
@@ -80,12 +76,12 @@ public class AggregationSinkTest {
 
     @Test
     public void testParallel() {
-        testee.receive(new Result(new DirectlyFollows("A", "B"), 5));
-        testee.receive(new Result(new DirectlyFollows("B", "D"), 3));
-        testee.receive(new Result(new DirectlyFollows("D", "B"), 3));
-        testee.receive(new Result(new DirectlyFollows("B", "C"), 5));
-        testee.receive(new Result(new DirectlyFollows("A", "D"), 5));
-        testee.receive(new Result(new DirectlyFollows("D", "C"), 5));
+        testee.receive(new Result(new DirectlyFollowsRelation("A", "B"), 5));
+        testee.receive(new Result(new DirectlyFollowsRelation("B", "D"), 3));
+        testee.receive(new Result(new DirectlyFollowsRelation("D", "B"), 3));
+        testee.receive(new Result(new DirectlyFollowsRelation("B", "C"), 5));
+        testee.receive(new Result(new DirectlyFollowsRelation("A", "D"), 5));
+        testee.receive(new Result(new DirectlyFollowsRelation("D", "C"), 5));
 
         assertEquals(4, processModel.getCausalEvents().size());
         assertEquals(2, processModel.getParallelGateways().size());

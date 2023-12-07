@@ -1,23 +1,23 @@
 package de.cau.se.datastructure;
 
 public class Result {
-    private DirectlyFollows directlyFollows;
+    private DirectlyFollowsRelation directlyFollowsRelation;
     private Integer count;
 
     public Result() {
     }
 
-    public Result(final DirectlyFollows directlyFollows, final Integer count) {
-        this.directlyFollows = directlyFollows;
+    public Result(final DirectlyFollowsRelation directlyFollowsRelation, final Integer count) {
+        this.directlyFollowsRelation = directlyFollowsRelation;
         this.count = count;
     }
 
-    public DirectlyFollows getDirectlyFollows() {
-        return directlyFollows;
+    public DirectlyFollowsRelation getDirectlyFollows() {
+        return directlyFollowsRelation;
     }
 
-    public void setDirectlyFollows(final DirectlyFollows directlyFollows) {
-        this.directlyFollows = directlyFollows;
+    public void setDirectlyFollows(final DirectlyFollowsRelation directlyFollowsRelation) {
+        this.directlyFollowsRelation = directlyFollowsRelation;
     }
 
     public Integer getCount() {
@@ -31,7 +31,7 @@ public class Result {
     @Override
     public String toString() {
         return "Result{" +
-                "directlyFollows=" + directlyFollows +
+                "directlyFollows=" + directlyFollowsRelation +
                 ", count=" + count +
                 '}';
     }

@@ -1,6 +1,6 @@
 package de.cau.se.model;
 
-import de.cau.se.datastructure.DirectlyFollows;
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.processmodel.ProcessModel;
 
@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class MinedProcessModel implements ProcessModel {
-    private Set<DirectlyFollows> causalEvents;
+    private Set<DirectlyFollowsRelation> causalEvents;
     private Set<Gateway> andGateways;
     private Set<Gateway> xorGateways;
 
@@ -19,8 +19,8 @@ public class MinedProcessModel implements ProcessModel {
     }
 
 
-    public void addCausalEvent(final DirectlyFollows directlyFollows) {
-        causalEvents.add(directlyFollows);
+    public void addCausalEvent(final DirectlyFollowsRelation directlyFollowsRelation) {
+        causalEvents.add(directlyFollowsRelation);
     }
 
     public void addAndGateway(final Gateway andGateway) {
@@ -31,8 +31,8 @@ public class MinedProcessModel implements ProcessModel {
         xorGateways.add(xorGateway);
     }
 
-    public void removeCausalEvent(final DirectlyFollows directlyFollows) {
-        causalEvents.remove(directlyFollows);
+    public void removeCausalEvent(final DirectlyFollowsRelation directlyFollowsRelation) {
+        causalEvents.remove(directlyFollowsRelation);
     }
 
     public void removeAndGateway(final Gateway andGateway) {
@@ -45,7 +45,7 @@ public class MinedProcessModel implements ProcessModel {
 
 
     @Override
-    public Set<DirectlyFollows> getCausalEvents() {
+    public Set<DirectlyFollowsRelation> getCausalEvents() {
         return causalEvents;
     }
 
@@ -59,7 +59,7 @@ public class MinedProcessModel implements ProcessModel {
         return xorGateways;
     }
 
-    public void setCausalEvents(Set<DirectlyFollows> causalEvents) {
+    public void setCausalEvents(Set<DirectlyFollowsRelation> causalEvents) {
         this.causalEvents = causalEvents;
     }
 

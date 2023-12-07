@@ -1,7 +1,7 @@
 package de.cau.se.processmodel;
 
 import de.cau.se.datastructure.BranchPair;
-import de.cau.se.datastructure.DirectlyFollows;
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 
 import java.util.Set;
@@ -9,26 +9,26 @@ import java.util.Set;
 public class SmallProcessModel implements ProcessModel {
 
     @Override
-    public Set<DirectlyFollows> getCausalEvents() {
+    public Set<DirectlyFollowsRelation> getCausalEvents() {
         return Set.of(
-                new DirectlyFollows("A", "C"),
-                new DirectlyFollows("A", "E"),
-                new DirectlyFollows("E", "F"),//
-                new DirectlyFollows("C", "D"),//
-                new DirectlyFollows("D", "B"),
-                new DirectlyFollows("B", "G"),
-                new DirectlyFollows("G", "I"),
-                new DirectlyFollows("G", "J"),
-                new DirectlyFollows("I", "H"),
-                new DirectlyFollows("H", "K"),
-                new DirectlyFollows("K", "M"),
-                new DirectlyFollows("K", "N"),
-                new DirectlyFollows("K", "O"),
-                new DirectlyFollows("K", "P"),
-                new DirectlyFollows("M", "L"),
-                new DirectlyFollows("N", "L"),
-                new DirectlyFollows("O", "L"),
-                new DirectlyFollows("P", "L"));
+                new DirectlyFollowsRelation("A", "C"),
+                new DirectlyFollowsRelation("A", "E"),
+                new DirectlyFollowsRelation("E", "F"),//
+                new DirectlyFollowsRelation("C", "D"),//
+                new DirectlyFollowsRelation("D", "B"),
+                new DirectlyFollowsRelation("B", "G"),
+                new DirectlyFollowsRelation("G", "I"),
+                new DirectlyFollowsRelation("G", "J"),
+                new DirectlyFollowsRelation("I", "H"),
+                new DirectlyFollowsRelation("H", "K"),
+                new DirectlyFollowsRelation("K", "M"),
+                new DirectlyFollowsRelation("K", "N"),
+                new DirectlyFollowsRelation("K", "O"),
+                new DirectlyFollowsRelation("K", "P"),
+                new DirectlyFollowsRelation("M", "L"),
+                new DirectlyFollowsRelation("N", "L"),
+                new DirectlyFollowsRelation("O", "L"),
+                new DirectlyFollowsRelation("P", "L"));
         // JH, ED, FB, CF
     }
 

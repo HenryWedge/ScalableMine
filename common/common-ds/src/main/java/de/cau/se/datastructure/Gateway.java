@@ -16,6 +16,17 @@ public class Gateway {
         this.branchPair = branchPair;
     }
 
+    public boolean isBasedOnDirectlyFollowsRelation(final DirectlyFollowsRelation directlyFollowsRelation) {
+        return (GatewayType.SPLIT == gatewayType
+                && connectingEvent.equals(directlyFollowsRelation.getPredecessor())
+                && (branchPair.getBranch1().equals(directlyFollowsRelation.getSuccessor())
+                || branchPair.getBranch2().equals(directlyFollowsRelation.getSuccessor())))
+                || (GatewayType.JOIN == gatewayType
+                && connectingEvent.equals(directlyFollowsRelation.getSuccessor())
+                && (branchPair.getBranch1().equals(directlyFollowsRelation.getPredecessor())
+                || branchPair.getBranch2().equals(directlyFollowsRelation.getPredecessor())));
+    }
+
     public enum GatewayType {
         SPLIT, JOIN;
     }

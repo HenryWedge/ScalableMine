@@ -1,16 +1,16 @@
-package de.cau.se.map;
+package de.cau.se.map.directlyfollows;
 
-import de.cau.se.datastructure.DirectlyFollows;
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Result;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DirectlyFollowsMap extends HashMap<DirectlyFollows, Integer> {
+public class DirectlyFollowsRelationCountMap extends HashMap<DirectlyFollowsRelation, Integer> {
 
-    public void accept(final DirectlyFollows directlyFollows) {
-        put(directlyFollows, containsKey(directlyFollows) ? get(directlyFollows) + 1 : 1);
+    public void accept(final DirectlyFollowsRelation directlyFollowsRelation) {
+        put(directlyFollowsRelation, containsKey(directlyFollowsRelation) ? get(directlyFollowsRelation) + 1 : 1);
     }
 
     public List<Result> getAllRelevantEvents(final Integer relevanceThreshold) {

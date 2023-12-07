@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory;
  * Kafka specific configurations can be adjusted by topicName, numberOfPartitions, bootstrapServer
  */
 public class SimpleDataGenerator extends AbstractProducer<Event> {
-
-    private static final Logger log = LoggerFactory.getLogger(SimpleDataGenerator.class);
+    public static final int MILLION = 1000000;
+    public static final int BILLION = 1000000000;
 
     public SimpleDataGenerator(final String bootstrapServer, Class<?> serializerClazz) {
         super(bootstrapServer, serializerClazz);
@@ -51,6 +51,8 @@ public class SimpleDataGenerator extends AbstractProducer<Event> {
         final List<Event> eventLog = buildEventLog(eventLogResourcePath);
 
         final List<Event> resultEventLog = new ArrayList<>();
+
+        // replicate event log
         for (int i = 0; i < 120; i++) {
             resultEventLog.addAll(eventLog);
         }
@@ -64,8 +66,8 @@ public class SimpleDataGenerator extends AbstractProducer<Event> {
                              final int eventsPerSecond) {
 
         final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(4);
-        final AtomicInteger counter = new AtomicInteger(1000000 * getReplicaNumber().orElse(0));
-        final int periodBetweenSendActionsInNanoSeconds = 1000000000 / eventsPerSecond;
+        final AtomicInteger counter = new AtomicInteger(MILLION * getReplicaNumber().orElse(0));
+        final int periodBetweenSendActionsInNanoSeconds = BILLION / eventsPerSecond;
 
         scheduledExecutorService.scheduleAtFixedRate(() ->
         {

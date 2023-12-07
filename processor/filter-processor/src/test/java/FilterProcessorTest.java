@@ -1,8 +1,8 @@
 import de.cau.se.*;
-import de.cau.se.datastructure.DirectlyFollows;
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
-import de.cau.se.map.DirectlyFollowsMap;
-import de.cau.se.map.TraceIdMap;
+import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
+import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.FilterProcessor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,14 +25,14 @@ public class FilterProcessorTest {
     @Mock
     private KafkaConsumer consumer;
     private TraceIdMap traceIdMap;
-    private DirectlyFollowsMap directlyFollowsMap;
+    private DirectlyFollowsRelationCountMap directlyFollowsRelationCountMap;
 
     @BeforeEach
     void prepare() {
         openMocks(this);
         traceIdMap = new TraceIdMap();
-        directlyFollowsMap = new DirectlyFollowsMap();
-        testee = new FilterProcessor(sender, consumer, directlyFollowsMap, traceIdMap, 3, 2);
+        directlyFollowsRelationCountMap = new DirectlyFollowsRelationCountMap();
+        testee = new FilterProcessor(sender, consumer, directlyFollowsRelationCountMap, traceIdMap, 3, 2);
     }
 
     @Test
@@ -47,15 +47,15 @@ public class FilterProcessorTest {
         assertTrue(traceIdMap.containsKey(1));
         assertEquals(1, traceIdMap.size(), "");
         assertEquals(new Event(1, "B"), traceIdMap.get(1), "");
-        assertEquals(directlyFollowsMap.get(new DirectlyFollows("A", "B")), 1, "");
+        assertEquals(directlyFollowsRelationCountMap.get(new DirectlyFollowsRelation("A", "B")), 1, "");
 
         testee.receive(new Event(1, "C"));
 
         assertTrue(traceIdMap.containsKey(1));
         assertEquals(1, traceIdMap.size(), "");
         assertEquals(new Event(1, "C"), traceIdMap.get(1), "");
-        assertEquals(directlyFollowsMap.get(new DirectlyFollows("A", "B")), 1, "");
-        assertEquals(directlyFollowsMap.get(new DirectlyFollows("B", "C")), 1, "");
+        assertEquals(directlyFollowsRelationCountMap.get(new DirectlyFollowsRelation("A", "B")), 1, "");
+        assertEquals(directlyFollowsRelationCountMap.get(new DirectlyFollowsRelation("B", "C")), 1, "");
 
         testee.receive(new Event(2, "A"));
 
@@ -64,9 +64,9 @@ public class FilterProcessorTest {
         assertEquals(2, traceIdMap.size(), "");
         assertEquals(new Event(1, "C"), traceIdMap.get(1), "");
         assertEquals(new Event(2, "A"), traceIdMap.get(2), "");
-        assertEquals(directlyFollowsMap.get(new DirectlyFollows("A", "B")), 1, "");
-        assertEquals(directlyFollowsMap.get(new DirectlyFollows("B", "C")), 1, "");
-        assertFalse(directlyFollowsMap.containsKey(new DirectlyFollows("C", "A")));
+        assertEquals(directlyFollowsRelationCountMap.get(new DirectlyFollowsRelation("A", "B")), 1, "");
+        assertEquals(directlyFollowsRelationCountMap.get(new DirectlyFollowsRelation("B", "C")), 1, "");
+        assertFalse(directlyFollowsRelationCountMap.containsKey(new DirectlyFollowsRelation("C", "A")));
 
         testee.receive(new Event(1, "A"));
 

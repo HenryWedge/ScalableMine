@@ -1,17 +1,16 @@
 package de.cau.se.model;
 
-import de.cau.se.datastructure.DirectlyFollows;
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.processmodel.ProcessModel;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class CountBasedMinedProcessModel implements ProcessModel {
 
-    private Map<DirectlyFollows, Integer> causalEvents;
-    private Map<Gateway, Integer> andGateways;
-    private Map<Gateway, Integer> xorGateways;
+    private final Map<DirectlyFollowsRelation, Integer> causalEvents;
+    private final Map<Gateway, Integer> andGateways;
+    private final Map<Gateway, Integer> xorGateways;
 
     public CountBasedMinedProcessModel() {
         this.causalEvents = new HashMap<>();
@@ -20,11 +19,11 @@ public class CountBasedMinedProcessModel implements ProcessModel {
     }
 
 
-    public void addCausalEvent(final DirectlyFollows directlyFollows) {
-        if (causalEvents.containsKey(directlyFollows)) {
-            causalEvents.put(directlyFollows, causalEvents.get(directlyFollows) + 1);
+    public void addCausalEvent(final DirectlyFollowsRelation directlyFollowsRelation) {
+        if (causalEvents.containsKey(directlyFollowsRelation)) {
+            causalEvents.put(directlyFollowsRelation, causalEvents.get(directlyFollowsRelation) + 1);
         } else {
-            causalEvents.put(directlyFollows, 1);
+            causalEvents.put(directlyFollowsRelation, 1);
         }
     }
 
@@ -45,20 +44,17 @@ public class CountBasedMinedProcessModel implements ProcessModel {
     }
 
     public void removeGatewaysAndDirectlyFollowsRelationsBelowRelevanceThreshold(final int relevanceThreshold) {
-        causalEvents = removeIrrelevant(causalEvents, relevanceThreshold);
-        andGateways = removeIrrelevant(andGateways, relevanceThreshold);
-        xorGateways = removeIrrelevant(xorGateways, relevanceThreshold);
+        removeIrrelevant(causalEvents, relevanceThreshold);
+        removeIrrelevant(andGateways, relevanceThreshold);
+        removeIrrelevant(xorGateways, relevanceThreshold);
     }
 
-    private <T> Map<T, Integer> removeIrrelevant(final Map<T, Integer> countMap, final int relevanceThreshold) {
-        return countMap.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() >= relevanceThreshold)
-                .collect(Collectors.toMap(Map.Entry::getKey, a -> 0));
+    private void removeIrrelevant(final Map<?, Integer> countMap, final int relevanceThreshold) {
+        countMap.entrySet().removeIf(entry -> entry.getValue() >= relevanceThreshold);
     }
 
     @Override
-    public Set<DirectlyFollows> getCausalEvents() {
+    public Set<DirectlyFollowsRelation> getCausalEvents() {
         return causalEvents.keySet();
     }
 
