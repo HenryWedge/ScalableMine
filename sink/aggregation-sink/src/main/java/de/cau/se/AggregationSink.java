@@ -1,43 +1,47 @@
 package de.cau.se;
 
+import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Result;
-import de.cau.se.map.result.ResultMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AggregationSink extends AbstractConsumer<Result> {
 
-    private final ResultMap resultMap;
+    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> microBatchRelationCountMap;
 
-    private final ModelUpdater modelUpdater;
+    private final ModelUpdateService modelUpdateService;
 
     private final PrecisionChecker precisionChecker;
 
-    private final Integer aggregateCount;
+    private final Integer refreshRate;
 
     private final Integer relevanceThreshold;
 
-    private final AtomicInteger receivedEvents = new AtomicInteger(0);
+    private final Integer irrelevanceThreshold;
+
+    private int n = 0;
 
     private final ProcessModel processModel;
 
     public AggregationSink(final Consumer<String, Result> consumer,
-                           final ResultMap resultMap,
-                           final int aggregateCount,
+                           final MicroBatchRelationCountMap<DirectlyFollowsRelation> microBatchRelationCountMap,
+                           final int refreshRate,
                            final int relevanceThreshold,
-                           final ModelUpdater modelUpdater,
+                           final int irrelevanceThreshold,
+                           final ModelUpdateService modelUpdateService,
                            final EventRelationLogger eventRelationLogger,
                            final PrecisionChecker precisionChecker,
                            final ProcessModel processModel) {
         super(consumer);
-        this.resultMap = resultMap;
-        this.aggregateCount = aggregateCount;
+        this.microBatchRelationCountMap = microBatchRelationCountMap;
+        this.refreshRate = refreshRate;
         this.relevanceThreshold = relevanceThreshold;
-        this.modelUpdater = modelUpdater;
+        this.irrelevanceThreshold = irrelevanceThreshold;
+        this.modelUpdateService = modelUpdateService;
         this.eventRelationLogger = eventRelationLogger;
         this.precisionChecker = precisionChecker;
         this.processModel = processModel;
@@ -47,13 +51,17 @@ public class AggregationSink extends AbstractConsumer<Result> {
 
     @Override
     public void receive(final Result result) {
-        resultMap.insertOrUpdate(result.getDirectlyFollows(), result.getCount());
+        n++;
+        microBatchRelationCountMap.insertOrUpdate(result.getDirectlyFollows(), result.getCount());
 
-        if (receivedEvents.incrementAndGet() % aggregateCount == 0) {
-            resultMap.removeIrrelevant(relevanceThreshold);
-            modelUpdater.update(result.getDirectlyFollows(), result.getCount());
+        if (n % refreshRate == 0) {
+            microBatchRelationCountMap.getRelevantRelations(relevanceThreshold).forEach(modelUpdateService::update);
+            microBatchRelationCountMap.getIrrelevantRelations(irrelevanceThreshold).forEach(modelUpdateService::remove);
+            microBatchRelationCountMap.clear();
+
+            modelUpdateService.update(result.getDirectlyFollows(), result.getCount());
             eventRelationLogger.logRelations(processModel);
-            precisionChecker.calculatePrecision(processModel, modelUpdater.getProcessModel());
+            precisionChecker.calculatePrecision(processModel, modelUpdateService.getProcessModel());
         }
     }
 }

@@ -2,29 +2,24 @@ package de.cau.se;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
-import de.cau.se.map.result.BurattinResultMap;
-import de.cau.se.map.result.FrequencyDeltaPair;
-import de.cau.se.map.result.IResultMap;
-import de.cau.se.map.trace.BurattinTraceIdMap;
-import de.cau.se.map.trace.TraceIdMapEntry;
+import de.cau.se.map.result.LossyCountingRelationCountMap;
+import de.cau.se.map.trace.LossyCountingTraceIdMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
-
-import java.util.Optional;
 
 /**
  * Heuristics Miner according to Andrea Burattin. Enhanced with usage of data structures.
  */
 public class LossyCountingSink extends AbstractConsumer<Event> {
     int n = 1;
-    private final IResultMap<String, FrequencyDeltaPair> activityMap = new BurattinResultMap<>();
-    private final BurattinTraceIdMap traceIdMap = new BurattinTraceIdMap();
-    private final IResultMap<DirectlyFollowsRelation, FrequencyDeltaPair> directlyFollowsMap = new BurattinResultMap<>();
-    private final ModelUpdater modelUpdater;
+    private final LossyCountingRelationCountMap<String> activityMap = new LossyCountingRelationCountMap<>();
+    private final LossyCountingTraceIdMap traceIdMap = new LossyCountingTraceIdMap();
+    private final LossyCountingRelationCountMap<DirectlyFollowsRelation> relationCountMap = new LossyCountingRelationCountMap<>();
+    private final ModelUpdateService modelUpdateService;
     private final EventRelationLogger eventRelationLogger;
     private final PrecisionChecker precisionChecker;
     private final ProcessModel originalProcessModel;
@@ -33,14 +28,14 @@ public class LossyCountingSink extends AbstractConsumer<Event> {
 
     public LossyCountingSink(final Consumer<String, Event> consumer,
                              final int bucketSize,
-                             final ModelUpdater modelUpdater,
+                             final ModelUpdateService modelUpdateService,
                              final EventRelationLogger eventRelationLogger,
                              final PrecisionChecker precisionChecker,
                              final Integer refreshRate,
                              final ProcessModel originalProcessModel) {
         super(consumer);
         this.bucketSize = bucketSize;
-        this.modelUpdater = modelUpdater;
+        this.modelUpdateService = modelUpdateService;
         this.eventRelationLogger = eventRelationLogger;
         this.precisionChecker = precisionChecker;
         this.refreshRate = refreshRate;
@@ -62,12 +57,12 @@ public class LossyCountingSink extends AbstractConsumer<Event> {
 
         activityMap.insertOrUpdate(activity, currentBucketId - 1);
 
-        final TraceIdMapEntry traceIdMapEntry = traceIdMap.get(traceId);
+        final LossyCountingTraceIdMap.Entry entry = traceIdMap.get(traceId);
         traceIdMap.insertOrUpdate(traceId, event.getActivity(), currentBucketId - 1);
 
-        if (traceIdMapEntry != null && traceIdMapEntry.getLastEvent() != null) {
-            final DirectlyFollowsRelation newDirectlyFollowsRelation = new DirectlyFollowsRelation(traceIdMapEntry.getLastEvent(), event.getActivity());
-            directlyFollowsMap.insertOrUpdate(newDirectlyFollowsRelation, currentBucketId - 1);
+        if (entry != null && entry.getLastEvent() != null) {
+            final DirectlyFollowsRelation newDirectlyFollowsRelation = new DirectlyFollowsRelation(entry.getLastEvent(), event.getActivity());
+            relationCountMap.insertOrUpdate(newDirectlyFollowsRelation, currentBucketId - 1);
         }
     }
 
@@ -75,14 +70,14 @@ public class LossyCountingSink extends AbstractConsumer<Event> {
         if (n % bucketSize == 0) {
             activityMap.removeIrrelevant(currentBucketId);
             traceIdMap.removeIrrelevantRelations(currentBucketId);
-            directlyFollowsMap.removeIrrelevant(currentBucketId);
+            relationCountMap.removeIrrelevant(currentBucketId);
         }
     }
 
     private void performFullModelUpdate() {
         if (n % refreshRate == 0) {
-            modelUpdater.update(directlyFollowsMap, activityMap.keySet());
-            MinedProcessModel minedProcessModel = modelUpdater.getProcessModel();
+            modelUpdateService.update(relationCountMap, activityMap.keySet());
+            MinedProcessModel minedProcessModel = modelUpdateService.getProcessModel();
             eventRelationLogger.logRelations(minedProcessModel);
             precisionChecker.calculatePrecision(originalProcessModel, minedProcessModel);
         }

@@ -1,11 +1,10 @@
-import de.cau.se.LossyCountingSink;
 import de.cau.se.LossyCountingSinkIncremental;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
-import de.cau.se.map.result.BurattinResultMap;
+import de.cau.se.map.result.LossyCountingRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.SmallProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -38,11 +37,11 @@ public class LossyCountingSinkIncrementalTest {
         testee = new LossyCountingSinkIncremental(
                 consumer,
                 5,
-                new ModelUpdater(
+                new ModelUpdateService(
                         0.3,
                         0.3,
                         processModel,
-                        new BurattinResultMap<>()),
+                        new LossyCountingRelationCountMap<>()),
                 eventRelationLogger,
                 precisionChecker,
                 1,

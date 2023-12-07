@@ -3,10 +3,9 @@ package de.cau.se;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
 import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
-import de.cau.se.map.result.ResultMap;
 import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.model.MinedProcessModel;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 
 /**
  * The aggregation processor mines parts of a process mining model. These parts are sent to the next stage.
@@ -19,37 +18,28 @@ public class AggregationProcessor extends AbstractProcessor<Event, MinedProcessM
 
     private final Integer bucketSize;
 
-    private final ResultMap resultMap;
-
-    private final ModelUpdater modelUpdater;
-
-    private final boolean isBatchProcessing = true;
+    private final ModelUpdateService modelUpdateService;
 
     public AggregationProcessor(final AbstractProducer<MinedProcessModel> sender,
                                 final KafkaConsumer<Event> consumer,
                                 final DirectlyFollowsRelationCountMap directlyFollowsCountMap,
                                 final TraceIdMap traceIdEventMap,
                                 final Integer bucketSize,
-                                final ResultMap resultMap,
-                                final ModelUpdater modelUpdater) {
+                                final ModelUpdateService modelUpdateService) {
         super(sender, consumer);
         this.directlyFollowsCountMap = directlyFollowsCountMap;
         this.traceIdEventMap = traceIdEventMap;
         this.bucketSize = bucketSize;
-        this.resultMap = resultMap;
-        this.modelUpdater = modelUpdater;
+        this.modelUpdateService = modelUpdateService;
     }
 
     @Override
     public void receive(Event event) {
         updateTraceIdAndDirectlyFollowsMap(event);
 
-        if (!isBatchProcessing || directlyFollowsCountMap.size() >= bucketSize) {
+        if (directlyFollowsCountMap.size() >= bucketSize) {
             processBucket();
             sendResults();
-        }
-
-        if (directlyFollowsCountMap.size() >= bucketSize) {
             clearBucket();
         }
     }
@@ -67,12 +57,12 @@ public class AggregationProcessor extends AbstractProcessor<Event, MinedProcessM
     }
 
     private void processBucket() {
-        directlyFollowsCountMap.forEach((a, b) -> modelUpdater.update(a));
+        directlyFollowsCountMap.forEach((a, b) -> modelUpdateService.update(a));
         sendResults();
     }
 
     private void sendResults() {
-        super.send(modelUpdater.getProcessModel());
+        super.send(modelUpdateService.getProcessModel());
         System.out.println("Sending results");
     }
 }

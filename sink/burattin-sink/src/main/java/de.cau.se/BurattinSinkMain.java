@@ -1,9 +1,9 @@
 package de.cau.se;
 
-import de.cau.se.map.result.ResultMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModelFactory;
 
@@ -27,11 +27,11 @@ public class BurattinSinkMain {
             final LossyCountingSinkIncremental lossyCountingSink = new LossyCountingSinkIncremental(
                     new KafkaConsumer<>(bootstrapServers, topic, groupId, EventDeserializer.class),
                     bucketSize,
-                    new ModelUpdater(
+                    new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
                             new MinedProcessModel(),
-                            new ResultMap()),
+                            new MicroBatchRelationCountMap()),
                     new EventRelationLogger(),
                     new PrecisionChecker(),
                     refreshRate,
@@ -43,11 +43,11 @@ public class BurattinSinkMain {
             final LossyCountingSink lossyCountingSink = new LossyCountingSink(
                     new KafkaConsumer<>(bootstrapServers, topic, groupId, EventDeserializer.class),
                     bucketSize,
-                    new ModelUpdater(
+                    new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
                             new MinedProcessModel(),
-                            new ResultMap()),
+                            new MicroBatchRelationCountMap()),
                     new EventRelationLogger(),
                     new PrecisionChecker(),
                     refreshRate,

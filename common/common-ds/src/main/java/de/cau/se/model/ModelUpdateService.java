@@ -3,7 +3,7 @@ package de.cau.se.model;
 import de.cau.se.datastructure.BranchPair;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
-import de.cau.se.map.result.IResultMap;
+import de.cau.se.map.result.RelationCountMap;
 
 
 import java.util.HashSet;
@@ -15,21 +15,18 @@ import java.util.function.Function;
  * This class tracks the frequent occurring directly follows relations and updates the model according to it.
  * The dependency-measure and the and-measure are calculated in the manner of the heuristics' miner.
  */
-public class ModelUpdater {
+public class ModelUpdateService {
 
     private final Double andThreshold;
     private final Double dependencyThreshold;
-    private final MinedProcessModel processModel;
-    private IResultMap<DirectlyFollowsRelation, ?> directlyFollowsRelationCountMap;
+    private RelationCountMap<DirectlyFollowsRelation, ?> directlyFollowsRelationCountMap;
 
-    public ModelUpdater(final Double andThreshold,
-                        final Double dependencyThreshold,
-                        final MinedProcessModel processModel,
-                        final IResultMap<DirectlyFollowsRelation, ?> directlyFollowsRelationCountMap) {
+    public ModelUpdateService(final Double andThreshold,
+                              final Double dependencyThreshold,
+                              final RelationCountMap<DirectlyFollowsRelation, ?> directlyFollowsRelationCountMap) {
         this.directlyFollowsRelationCountMap = directlyFollowsRelationCountMap;
         this.andThreshold = andThreshold;
         this.dependencyThreshold = dependencyThreshold;
-        this.processModel = processModel;
     }
 
     /**
@@ -72,8 +69,8 @@ public class ModelUpdater {
                        final Set<String> activitiesToUpdate) {
         directlyFollowsRelationCountMap.insertOrUpdate(directlyFollowsRelation, directlyFollowsCount);
         findCausalEvents(directlyFollowsRelation);
-        findSplits(activitiesToUpdate);
-        findJoins(activitiesToUpdate);
+        updateSplits(activitiesToUpdate);
+        updateJoins(activitiesToUpdate);
     }
 
     /**
@@ -82,15 +79,16 @@ public class ModelUpdater {
      *
      * @param activitiesToUpdate activities for which new gateways are computed.
      */
-    public void update(final IResultMap<DirectlyFollowsRelation, ?> directlyFollowsRelationCountMap,
-                       final Set<String> activitiesToUpdate) {
+    public void updateProcessModel(final MinedProcessModel processModel,
+                                   final RelationCountMap<DirectlyFollowsRelation, ?> directlyFollowsRelationCountMap,
+                                   final Set<String> activitiesToUpdate) {
         this.directlyFollowsRelationCountMap = directlyFollowsRelationCountMap;
-        findCausalEvents();
-        findSplits(activitiesToUpdate);
-        findJoins(activitiesToUpdate);
+        updateCausalEvents(processModel);
+        updateSplits(processModel, activitiesToUpdate);
+        updateJoins(processModel, activitiesToUpdate);
     }
 
-    private void findCausalEvents(final DirectlyFollowsRelation newDiscoveredDirectlyFollowsRelation) {
+    private void updateCausalEvents(final MinedProcessModel processModel, final DirectlyFollowsRelation newDiscoveredDirectlyFollowsRelation) {
         Integer directlyFollowsCount = directlyFollowsRelationCountMap.getCountOf(newDiscoveredDirectlyFollowsRelation);
         final Integer reverseDirectlyFollowsCount = directlyFollowsRelationCountMap.getCountOf(newDiscoveredDirectlyFollowsRelation.getSwapped());
         if (directlyFollowsCount > ((reverseDirectlyFollowsCount * (1 + dependencyThreshold) + dependencyThreshold)) / (1 - dependencyThreshold)) {
@@ -100,29 +98,32 @@ public class ModelUpdater {
         }
     }
 
-    private void findCausalEvents() {
+    private void updateCausalEvents(final MinedProcessModel processModel) {
         for (Map.Entry<DirectlyFollowsRelation, ?> entry : directlyFollowsRelationCountMap.entrySet()) {
-            findCausalEvents(entry.getKey());
+            updateCausalEvents(processModel, entry.getKey());
         }
     }
 
-    public void findSplits(final Set<String> frequentActivities) {
-        mineGateway(frequentActivities,
+    public void updateSplits(final MinedProcessModel processModel, final Set<String> frequentActivities) {
+        mineGateway(processModel,
+                frequentActivities,
                 andThreshold,
                 DirectlyFollowsRelation::getPredecessor,
                 DirectlyFollowsRelation::getSuccessor,
                 Gateway.GatewayType.SPLIT);
     }
 
-    public void findJoins(final Set<String> frequentActivities) {
-        mineGateway(frequentActivities,
+    public void updateJoins(final MinedProcessModel processModel, final Set<String> frequentActivities) {
+        mineGateway(processModel,
+                frequentActivities,
                 andThreshold,
                 DirectlyFollowsRelation::getSuccessor,
                 DirectlyFollowsRelation::getPredecessor,
                 Gateway.GatewayType.JOIN);
     }
 
-    private void mineGateway(final Set<String> frequentActivities,
+    private void mineGateway(final MinedProcessModel processModel,
+                             final Set<String> frequentActivities,
                              final Double andThreshold,
                              final Function<DirectlyFollowsRelation, String> extractConnectingEvent,
                              final Function<DirectlyFollowsRelation, String> extractBranchEvent,
@@ -147,14 +148,14 @@ public class ModelUpdater {
                         final double andMeasure = calculateAndMeasure(branch1, branch2, branchEvent1, branchEvent2);
                         final Gateway newGateway = new Gateway(gatewayType, connectingEvent, new BranchPair(branchEvent1, branchEvent2));
                         final boolean isAndGateway = andMeasure >= andThreshold;
-                        addGatewayToSet(newGateway, isAndGateway);
+                        addGatewayToSet(processModel, newGateway, isAndGateway);
                     }
                 }
             }
         }
     }
 
-    private void addGatewayToSet(final Gateway newGateway, final boolean isAndGateway) {
+    private void addGatewayToSet(final MinedProcessModel processModel, final Gateway newGateway, final boolean isAndGateway) {
         if (isAndGateway) {
             processModel.addAndGateway(newGateway);
             processModel.removeXorGateway(newGateway);
@@ -173,9 +174,5 @@ public class ModelUpdater {
         final Integer bc = directlyFollowsRelationCountMap.getCountOf(new DirectlyFollowsRelation(branchEvent1, branchEvent2));
         final Integer cb = directlyFollowsRelationCountMap.getCountOf(new DirectlyFollowsRelation(branchEvent2, branchEvent1));
         return ((double) bc + cb) / (ab + ac + 1);
-    }
-
-    public MinedProcessModel getProcessModel() {
-        return processModel;
     }
 }

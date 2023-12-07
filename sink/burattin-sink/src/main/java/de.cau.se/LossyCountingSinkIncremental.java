@@ -2,12 +2,11 @@ package de.cau.se;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
-import de.cau.se.map.result.IResultMap;
-import de.cau.se.map.result.ResultMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -21,8 +20,8 @@ import java.util.Set;
 public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
     int n = 1;
     private final TraceIdMap traceIdMap = new TraceIdMap();
-    private final IResultMap<DirectlyFollowsRelation, Integer> directlyFollowsMap = new ResultMap();
-    private final ModelUpdater modelUpdater;
+    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> directlyFollowsMap = new MicroBatchRelationCountMap<>();
+    private final ModelUpdateService modelUpdateService;
     private final EventRelationLogger eventRelationLogger;
     private final PrecisionChecker precisionChecker;
     private final ProcessModel originalProcessModel;
@@ -35,7 +34,7 @@ public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
 
     public LossyCountingSinkIncremental(final Consumer<String, Event> consumer,
                                         final int bucketSize,
-                                        final ModelUpdater modelUpdater,
+                                        final ModelUpdateService modelUpdateService,
                                         final EventRelationLogger eventRelationLogger,
                                         final PrecisionChecker precisionChecker,
                                         final Integer refreshRate,
@@ -44,7 +43,7 @@ public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
                                         final ProcessModel originalProcessModel) {
         super(consumer);
         this.bucketSize = bucketSize;
-        this.modelUpdater = modelUpdater;
+        this.modelUpdateService = modelUpdateService;
         this.eventRelationLogger = eventRelationLogger;
         this.precisionChecker = precisionChecker;
         this.refreshRate = refreshRate;
@@ -73,21 +72,21 @@ public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
 
     private void cleanupSets() {
         if (n % bucketSize == 0) {
-            irrelevantDirectlyFollowsRelations.addAll(directlyFollowsMap.getIrrelevant(irrelevanceThreshold));
-            relevantDirectlyFollowsRelations.addAll(directlyFollowsMap.getRelationsWithCountGreaterThan(relevanceThreshold));
+            irrelevantDirectlyFollowsRelations.addAll(directlyFollowsMap.getIrrelevantRelations(irrelevanceThreshold));
+            relevantDirectlyFollowsRelations.addAll(directlyFollowsMap.getRelevantRelations(relevanceThreshold));
             directlyFollowsMap.clear();
         }
     }
 
     private void performFullModelUpdate() {
         if (n % refreshRate == 0) {
-            relevantDirectlyFollowsRelations.forEach(modelUpdater::update);
-            irrelevantDirectlyFollowsRelations.forEach(modelUpdater::remove);
+            relevantDirectlyFollowsRelations.forEach(modelUpdateService::update);
+            irrelevantDirectlyFollowsRelations.forEach(modelUpdateService::remove);
 
             irrelevantDirectlyFollowsRelations.clear();
             relevantDirectlyFollowsRelations.clear();
 
-            MinedProcessModel minedProcessModel = modelUpdater.getProcessModel();
+            MinedProcessModel minedProcessModel = modelUpdateService.getProcessModel();
             eventRelationLogger.logRelations(minedProcessModel);
             precisionChecker.calculatePrecision(originalProcessModel, minedProcessModel);
         }

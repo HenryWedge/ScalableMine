@@ -3,10 +3,10 @@ import de.cau.se.AggregationProcessor;
 import de.cau.se.KafkaConsumer;
 import de.cau.se.datastructure.Event;
 import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
-import de.cau.se.map.result.ResultMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.model.MinedProcessModel;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,7 +33,7 @@ public class FilterProcessorTest {
         openMocks(this);
         traceIdMap = new TraceIdMap();
         directlyFollowsRelationCountMap = new DirectlyFollowsRelationCountMap();
-        testee = new AggregationProcessor(sender, consumer, directlyFollowsRelationCountMap, traceIdMap, 3, new ResultMap(), new ModelUpdater(0.5d, 0.8d, new MinedProcessModel(), new ResultMap()));
+        testee = new AggregationProcessor(sender, consumer, directlyFollowsRelationCountMap, traceIdMap, 3, new ModelUpdateService(0.5d, 0.8d, new MinedProcessModel(), new MicroBatchRelationCountMap()));
     }
 
     @Test

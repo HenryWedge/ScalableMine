@@ -38,6 +38,7 @@ public class FilterSinkTest {
                 consumer,
                 2,
                 2,
+                1,
                 new CountBasedMinedProcessModel(),
                 eventRelationLogger,
                 precisionChecker,

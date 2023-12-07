@@ -6,15 +6,15 @@ spec:
   benchmark: "kafka-benchmark"
   load:
     loadType: "EventsPerSecond"
-    loadValues: [30000, 31000, 32000, 33000, 34000, 35000, 120000]
+    loadValues: [3000, 3500, 4000, 4500, 5000]
   resources:
     resourceType: "Instances"
-    resourceValues: [1, 2, 3, 4]
+    resourceValues: [1]
   slos:
     - name: "lag trend"
       properties:
-        consumerGroup: output-group
-        threshold: 1000
+        consumerGroup: default # output-group
+        threshold: 100
   execution:
     metric: "capacity"
     strategy:
@@ -22,16 +22,16 @@ spec:
       restrictions:
         - "LowerBound"
       searchStrategy: "BinarySearch"
-    duration: 120 # in seconds
+    duration: 90 # in seconds
     repetitions: 1
     loadGenerationDelay: 30 # in seconds
   configOverrides:
-    - patcher:
-        type: "NodeSelectorPatcher"
-        resource: "processor-deployment.yaml"
-        properties:
-          variableName: "env"
-      value: "dev"
+    #- patcher:
+    #    type: "NodeSelectorPatcher"
+    #    resource: "processor-deployment.yaml"
+    #    properties:
+    #      variableName: "env"
+    #  value: "dev"
     - patcher:
         type: "NodeSelectorPatcher"
         resource: "sink-deployment.yaml"

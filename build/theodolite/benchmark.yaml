@@ -8,7 +8,7 @@ spec:
       - configMap:
          name: "configmap"
          files:
-           - processor-deployment.yaml
+           #- processor-deployment.yaml
            - sink-deployment.yaml
   loadGenerator:
     resources:
@@ -20,7 +20,7 @@ spec:
     - typeName: "Instances"
       patchers:
         - type: "ReplicaPatcher"
-          resource: "processor-deployment.yaml"
+          resource: "sink-deployment.yaml"
   loadTypes:
     - typeName: "EventsPerSecond"
       patchers:
@@ -35,7 +35,7 @@ spec:
       prometheusUrl: "http://prometheus-operated:9090"
       offset: 0
       properties:
-        consumerGroup: output-group
+        consumerGroup: default #output-group
         threshold: 0.5
         externalSloUrl: "http://localhost:80/evaluate-slope"
         warmup: 15 # in seconds

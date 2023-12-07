@@ -1,7 +1,5 @@
 package de.cau.se.map.trace;
 
-import de.cau.se.datastructure.Event;
-
 import java.util.HashMap;
 
 public class TraceIdMap extends HashMap<Integer, String> {
@@ -10,7 +8,7 @@ public class TraceIdMap extends HashMap<Integer, String> {
         String lastActivity = get(traceId);
 
         if (lastActivity == null) {
-            put(traceId, lastActivity);
+            put(traceId, activity);
         } else {
             replace(traceId, lastActivity, activity);
         }

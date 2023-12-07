@@ -1,10 +1,10 @@
 package de.cau.se;
 
 import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
-import de.cau.se.map.result.ResultMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.model.MinedProcessModel;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 
 public class AggregationProcessorMain {
 
@@ -16,21 +16,12 @@ public class AggregationProcessorMain {
         final Double andThreshold = Double.parseDouble(System.getenv("AND_THRESHOLD"));
         final Double dependencyThreshold = Double.parseDouble(System.getenv("DEPENDENCY_THRESHOLD"));
 
-        //new AggregationProcessor(
-        //        new AbstractProducer<>(bootstrapServer, ResultSerializer.class),
-        //        new KafkaConsumer<>(bootstrapServer, topic, groupId, EventDeserializer.class),
-        //        new DirectlyFollowsMap(),
-        //        new TraceIdMap(),
-        //        bucketSize)
-        //        .run();
-
         new AggregationProcessor(
                 new AbstractProducer<>(bootstrapServer, ProcessModelSerializer.class),
                 new KafkaConsumer<>(bootstrapServer, topic, groupId, EventDeserializer.class),
                 new DirectlyFollowsRelationCountMap(),
                 new TraceIdMap(),
                 bucketSize,
-                new ResultMap(),
-                new ModelUpdater(andThreshold, dependencyThreshold, new MinedProcessModel(), new ResultMap())).run();
+                new ModelUpdateService(andThreshold, dependencyThreshold, new MinedProcessModel(), new MicroBatchRelationCountMap())).run();
     }
 }

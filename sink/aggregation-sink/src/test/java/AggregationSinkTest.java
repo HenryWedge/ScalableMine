@@ -3,10 +3,10 @@ import de.cau.se.datastructure.BranchPair;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.datastructure.Result;
-import de.cau.se.map.result.ResultMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.PrecisionChecker;
-import de.cau.se.model.ModelUpdater;
+import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.MinedProcessModel;
 import de.cau.se.processmodel.SmallProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -23,7 +23,7 @@ public class AggregationSinkTest {
     @Mock
     private Consumer<String, Result> consumer;
     private MinedProcessModel processModel;
-    private ResultMap resultMap;
+    private MicroBatchRelationCountMap microBatchRelationCountMap;
     private AggregationSink testee;
     private EventRelationLogger eventRelationLogger;
     private PrecisionChecker precisionChecker;
@@ -33,21 +33,22 @@ public class AggregationSinkTest {
         openMocks(this);
 
         processModel = new MinedProcessModel();
-        resultMap = new ResultMap();
+        microBatchRelationCountMap = new MicroBatchRelationCountMap();
 
         eventRelationLogger = new EventRelationLogger();
         precisionChecker = new PrecisionChecker();
 
         testee = new AggregationSink(
                 consumer,
-                resultMap,
+                microBatchRelationCountMap,
                 2,
                 1,
-                new ModelUpdater(
+                1,
+                new ModelUpdateService(
                         0.5,
                         0.8,
                         processModel,
-                        new ResultMap()),
+                        new MicroBatchRelationCountMap()),
                 eventRelationLogger,
                 precisionChecker,
                 new SmallProcessModel());
@@ -56,7 +57,7 @@ public class AggregationSinkTest {
     @AfterEach
     void tearDown() {
         processModel = null;
-        resultMap = null;
+        microBatchRelationCountMap = null;
         testee = null;
     }
 

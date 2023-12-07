@@ -13,8 +13,6 @@ import java.util.List;
 
 public class FilterProcessor extends AbstractProcessor<Event, Result> {
 
-    private static final Logger log = LoggerFactory.getLogger(FilterProcessor.class);
-
     private final DirectlyFollowsRelationCountMap directlyFollowsCountMap;
 
     private final TraceIdMap traceIdEventMap;

@@ -8,15 +8,24 @@ public class FilterProcessorMain {
         final String bootstrapServer = System.getenv("BOOTSTRAP_SERVER");
         final String topic = System.getenv("TOPIC_NAME");
         final String groupId = System.getenv("GROUP_ID");
-        final Integer bucketSize = Integer.parseInt(System.getenv("BUCKET_SIZE"));
-        final Integer relevanceThreshold = Integer.parseInt(System.getenv("RELEVANCE_THRESHOLD"));
+        final int bucketSize = Integer.parseInt(System.getenv("BUCKET_SIZE"));
+        final int relevanceThreshold = Integer.parseInt(System.getenv("RELEVANCE_THRESHOLD"));
+        final boolean isIncremental = Boolean.parseBoolean(System.getenv("IS_RELEVANT"));
 
-        new FilterProcessor(
-                new AbstractProducer<>(bootstrapServer, ResultSerializer.class),
-                new KafkaConsumer<>(bootstrapServer, topic, groupId, EventDeserializer.class),
-                new DirectlyFollowsRelationCountMap(),
-                new TraceIdMap(),
-                bucketSize,
-                relevanceThreshold).run();
+        if (isIncremental) {
+            new FilterProcessor(
+                    new AbstractProducer<>(bootstrapServer, ResultSerializer.class),
+                    new KafkaConsumer<>(bootstrapServer, topic, groupId, EventDeserializer.class),
+                    new DirectlyFollowsRelationCountMap(),
+                    new TraceIdMap(),
+                    bucketSize,
+                    relevanceThreshold).run();
+        } else {
+            new FilterProcessorLossyCounting(
+                    new AbstractProducer<>(bootstrapServer, ResultSerializer.class),
+                    new KafkaConsumer<>(bootstrapServer, topic, groupId, EventDeserializer.class),
+                    bucketSize
+            ).run();
+        }
     }
 }
