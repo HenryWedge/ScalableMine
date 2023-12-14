@@ -1,8 +1,5 @@
 import de.cau.se.AggregationSink;
-import de.cau.se.datastructure.BranchPair;
-import de.cau.se.datastructure.DirectlyFollowsRelation;
-import de.cau.se.datastructure.Gateway;
-import de.cau.se.datastructure.Result;
+import de.cau.se.datastructure.*;
 import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.PrecisionChecker;
@@ -21,9 +18,9 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AggregationSinkTest {
     @Mock
-    private Consumer<String, Result> consumer;
+    private Consumer<String, TaggedRelation> consumer;
     private MinedProcessModel processModel;
-    private MicroBatchRelationCountMap microBatchRelationCountMap;
+    private MicroBatchRelationCountMap<DirectlyFollowsRelation> microBatchRelationCountMap;
     private AggregationSink testee;
     private EventRelationLogger eventRelationLogger;
     private PrecisionChecker precisionChecker;
@@ -33,22 +30,18 @@ public class AggregationSinkTest {
         openMocks(this);
 
         processModel = new MinedProcessModel();
-        microBatchRelationCountMap = new MicroBatchRelationCountMap();
+        microBatchRelationCountMap = new MicroBatchRelationCountMap<>();
 
         eventRelationLogger = new EventRelationLogger();
-        precisionChecker = new PrecisionChecker();
+        precisionChecker = new PrecisionChecker(false, "");
 
         testee = new AggregationSink(
                 consumer,
-                microBatchRelationCountMap,
-                2,
-                1,
-                1,
+                3,
                 new ModelUpdateService(
                         0.5,
                         0.8,
-                        processModel,
-                        new MicroBatchRelationCountMap()),
+                        new MicroBatchRelationCountMap<>()),
                 eventRelationLogger,
                 precisionChecker,
                 new SmallProcessModel());
@@ -63,10 +56,10 @@ public class AggregationSinkTest {
 
     @Test
     public void testXor() {
-        testee.receive(new Result(new DirectlyFollowsRelation("A", "B"), 5));
-        testee.receive(new Result(new DirectlyFollowsRelation("B", "C"), 5));
-        testee.receive(new Result(new DirectlyFollowsRelation("A", "D"), 7));
-        testee.receive(new Result(new DirectlyFollowsRelation("D", "C"), 6));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("A", "B"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("B", "C"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("A", "D"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("D", "C"), TaggedRelation.Tag.RELEVANT));
         assertEquals(4, processModel.getCausalEvents().size());
         assertTrue(processModel.getChoiceGateways().contains(new Gateway(Gateway.GatewayType.SPLIT, "A", new BranchPair("B", "D"))));
         assertTrue(processModel.getChoiceGateways().contains(new Gateway(Gateway.GatewayType.JOIN, "C", new BranchPair("B", "D"))));
@@ -77,12 +70,12 @@ public class AggregationSinkTest {
 
     @Test
     public void testParallel() {
-        testee.receive(new Result(new DirectlyFollowsRelation("A", "B"), 5));
-        testee.receive(new Result(new DirectlyFollowsRelation("B", "D"), 3));
-        testee.receive(new Result(new DirectlyFollowsRelation("D", "B"), 3));
-        testee.receive(new Result(new DirectlyFollowsRelation("B", "C"), 5));
-        testee.receive(new Result(new DirectlyFollowsRelation("A", "D"), 5));
-        testee.receive(new Result(new DirectlyFollowsRelation("D", "C"), 5));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("A", "B"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("B", "D"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("D", "B"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("B", "C"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("A", "D"), TaggedRelation.Tag.RELEVANT));
+        testee.receive(new TaggedRelation(new DirectlyFollowsRelation("D", "C"), TaggedRelation.Tag.RELEVANT));
 
         assertEquals(4, processModel.getCausalEvents().size());
         assertEquals(2, processModel.getParallelGateways().size());

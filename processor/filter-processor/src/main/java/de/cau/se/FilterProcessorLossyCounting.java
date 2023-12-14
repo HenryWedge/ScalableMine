@@ -8,10 +8,9 @@ import de.cau.se.map.trace.LossyCountingTraceIdMap;
 import org.apache.kafka.clients.consumer.Consumer;
 
 public class FilterProcessorLossyCounting extends AbstractProcessor<Event, Result> {
-
     int n = 1;
     private final LossyCountingTraceIdMap traceIdMap = new LossyCountingTraceIdMap();
-    private final LossyCountingRelationCountMap<DirectlyFollowsRelation> directlyFollowsMap = new LossyCountingRelationCountMap<>();
+    private final LossyCountingRelationCountMap<DirectlyFollowsRelation> relationsCountMap = new LossyCountingRelationCountMap<>();
     private final int bucketSize;
 
     public FilterProcessorLossyCounting(final AbstractProducer<Result> sender,
@@ -39,20 +38,20 @@ public class FilterProcessorLossyCounting extends AbstractProcessor<Event, Resul
         if (entry != null && entry.getLastEvent() != null) {
             final DirectlyFollowsRelation newDirectlyFollowsRelation =
                     new DirectlyFollowsRelation(entry.getLastEvent(), event.getActivity());
-            directlyFollowsMap.insertOrUpdate(newDirectlyFollowsRelation, currentBucketId - 1);
+            relationsCountMap.insertOrUpdate(newDirectlyFollowsRelation, currentBucketId - 1);
         }
     }
 
     private void cleanupSets(final int currentBucketId) {
         if (n % bucketSize == 0) {
             traceIdMap.removeIrrelevantRelations(currentBucketId);
-            directlyFollowsMap.removeIrrelevant(currentBucketId);
+            relationsCountMap.removeIrrelevant(currentBucketId);
         }
     }
 
     private void sendResults() {
         if (n % bucketSize == 0) {
-            directlyFollowsMap
+            relationsCountMap
                 .entrySet()
                 .stream()
                 .map(entry -> new Result(entry.getKey(), entry.getValue().getFrequency()))

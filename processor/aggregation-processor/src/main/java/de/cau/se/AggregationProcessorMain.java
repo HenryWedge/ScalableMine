@@ -22,6 +22,6 @@ public class AggregationProcessorMain {
                 new DirectlyFollowsRelationCountMap(),
                 new TraceIdMap(),
                 bucketSize,
-                new ModelUpdateService(andThreshold, dependencyThreshold, new MinedProcessModel(), new MicroBatchRelationCountMap())).run();
+                new ModelUpdateService(andThreshold, dependencyThreshold, new MicroBatchRelationCountMap<>())).run();
     }
 }

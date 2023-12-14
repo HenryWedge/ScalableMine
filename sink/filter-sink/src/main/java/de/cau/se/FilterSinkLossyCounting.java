@@ -3,12 +3,15 @@ package de.cau.se;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.map.result.LossyCountingRelationCountMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.CountBasedMinedProcessModel;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
+
+import java.util.Set;
 
 public class FilterSinkLossyCounting extends AbstractConsumer<MinedProcessModel> {
 
@@ -18,20 +21,17 @@ public class FilterSinkLossyCounting extends AbstractConsumer<MinedProcessModel>
     private Integer receivedEvents = 0;
     private final PrecisionChecker precisionChecker;
     private final ProcessModel processModel;
-    private final int bucketSize;
     private final LossyCountingRelationCountMap<DirectlyFollowsRelation> causalEvents = new LossyCountingRelationCountMap<>();
     private final LossyCountingRelationCountMap<Gateway> parallelGateways = new LossyCountingRelationCountMap<>();
     private final LossyCountingRelationCountMap<Gateway> choiceGateways = new LossyCountingRelationCountMap<>();
 
     public FilterSinkLossyCounting(final Consumer<String, MinedProcessModel> consumer,
                                    final Integer refreshRate,
-                                   final Integer bucketSize,
                                    final CountBasedMinedProcessModel minedProcessModel,
                                    final EventRelationLogger eventRelationLogger,
                                    final PrecisionChecker precisionChecker,
                                    final ProcessModel processModel) {
         super(consumer);
-        this.bucketSize = bucketSize;
         this.refreshRate = refreshRate;
         this.eventRelationLogger = eventRelationLogger;
         this.precisionChecker = precisionChecker;
@@ -41,28 +41,20 @@ public class FilterSinkLossyCounting extends AbstractConsumer<MinedProcessModel>
 
     @Override
     public void receive(final MinedProcessModel receivingProcessModel) {
-        final int currentBucketId = (int) Math.ceil((double) receivedEvents / bucketSize);
+        final int currentBucketId = (int) Math.ceil((double) receivedEvents / refreshRate);
 
         if (receivingProcessModel == null) {
             return;
         }
 
-        receivingProcessModel.getCausalEvents().forEach(causalEvent -> causalEvents.insertOrUpdate(causalEvent, currentBucketId - 1));
-        receivingProcessModel.getParallelGateways().forEach(parallelGateway -> parallelGateways.insertOrUpdate(parallelGateway, currentBucketId - 1));
-        receivingProcessModel.getChoiceGateways().forEach(choiceGateway -> choiceGateways.insertOrUpdate(choiceGateway, currentBucketId - 1));
+        updateStoredEventFromReceivingEvent(receivingProcessModel.getCausalEvents(), causalEvents, currentBucketId);
+        updateStoredEventFromReceivingEvent(receivingProcessModel.getParallelGateways(), parallelGateways, currentBucketId);
+        updateStoredEventFromReceivingEvent(receivingProcessModel.getChoiceGateways(), choiceGateways, currentBucketId);
 
         if (receivedEvents % refreshRate == 0) {
-            causalEvents.removeIrrelevant(refreshRate * currentBucketId);
-            parallelGateways.removeIrrelevant(refreshRate * currentBucketId);
-            choiceGateways.removeIrrelevant(refreshRate * currentBucketId);
-
-            causalEvents.keySet().forEach(causalEvent -> minedProcessModel.getCausalEventMap().insertOrUpdate(causalEvent, 1));
-            parallelGateways.keySet().forEach(parallelGateway -> minedProcessModel.getAndGateways().insertOrUpdate(parallelGateway, 1));
-            choiceGateways.keySet().forEach(choiceGateway -> minedProcessModel.getXorGateways().insertOrUpdate(choiceGateway, 1));
-
-            causalEvents.clear();
-            parallelGateways.clear();
-            choiceGateways.clear();
+            updateModelFromCollectedPattern(causalEvents, minedProcessModel.getCausalEventMap(), currentBucketId);
+            updateModelFromCollectedPattern(parallelGateways, minedProcessModel.getAndGateways(), currentBucketId);
+            updateModelFromCollectedPattern(choiceGateways, minedProcessModel.getXorGateways(), currentBucketId);
 
             eventRelationLogger.logRelations(minedProcessModel);
             precisionChecker.calculatePrecision(processModel, minedProcessModel);
@@ -71,4 +63,13 @@ public class FilterSinkLossyCounting extends AbstractConsumer<MinedProcessModel>
         receivedEvents++;
     }
 
+    private <T> void updateModelFromCollectedPattern(final LossyCountingRelationCountMap<T> storedRelation, final MicroBatchRelationCountMap<T> modelRelation, final int currentBucketId) {
+        storedRelation.removeIrrelevant(currentBucketId);
+        storedRelation.keySet().forEach(pattern -> modelRelation.insertOrUpdate(pattern, 1));
+        storedRelation.clear();
+    }
+
+    private <T> void updateStoredEventFromReceivingEvent(final Set<T> receivedRelation, final LossyCountingRelationCountMap<T> storedRelation, final int currentBucketId) {
+        receivedRelation.forEach(pattern -> storedRelation.insertOrUpdate(pattern, currentBucketId - 1));
+    }
 }

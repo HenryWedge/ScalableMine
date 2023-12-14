@@ -33,7 +33,7 @@ public class FilterProcessorTest {
         openMocks(this);
         traceIdMap = new TraceIdMap();
         directlyFollowsRelationCountMap = new DirectlyFollowsRelationCountMap();
-        testee = new AggregationProcessor(sender, consumer, directlyFollowsRelationCountMap, traceIdMap, 3, new ModelUpdateService(0.5d, 0.8d, new MinedProcessModel(), new MicroBatchRelationCountMap()));
+        testee = new AggregationProcessor(sender, consumer, directlyFollowsRelationCountMap, traceIdMap, 3, new ModelUpdateService(0.5d, 0.8d, new MicroBatchRelationCountMap<>()));
     }
 
     @Test

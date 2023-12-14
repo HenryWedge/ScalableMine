@@ -29,9 +29,8 @@ public class MicroBatchRelationCountMap<K> extends HashMap<K, Integer> implement
         return keySet().stream().filter(key -> get(key) <= threshold).collect(Collectors.toSet());
     }
 
-    public void removeIrrelevant(final int threshold) {
-        entrySet().removeIf(entry -> entry.getValue() <= threshold);
+    @Override
+    public int size() {
+        return values().stream().reduce(0, Integer::sum);
     }
-
-
 }

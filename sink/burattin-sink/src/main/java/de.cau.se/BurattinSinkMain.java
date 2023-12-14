@@ -1,5 +1,6 @@
 package de.cau.se;
 
+import de.cau.se.map.result.LossyCountingRelationCountMap;
 import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
@@ -18,22 +19,26 @@ public class BurattinSinkMain {
         final Double dependencyThreshold = Double.parseDouble(System.getenv("DEPENDENCY_THRESHOLD"));
         final int bucketSize = Integer.parseInt(System.getenv("BUCKET_SIZE"));
         final int refreshRate = Integer.parseInt(System.getenv("REFRESH_RATE"));
-        final int relevanceThreshold = Integer.parseInt(System.getenv("RELEVANCE_THRESHOLD"));
-        final int irrelevanceThreshold = Integer.parseInt(System.getenv("RELEVANCE_THRESHOLD"));
+
         final int processModelVariant = Integer.parseInt(System.getenv("PROCESS_MODEL_VARIANT"));
         final boolean isIncremental = Boolean.parseBoolean(System.getenv("IS_INCREMENTAL"));
+        final boolean usePrecisionMonitoring = Boolean.parseBoolean(System.getenv("USE_PRECISION_MONITORING"));
+        final String precisionMonitoringUrl = System.getenv("PRECISION_MONITORING_URL");
 
         if (isIncremental) {
+            final String[] relevanceEnv = System.getenv("RELEVANCE_THRESHOLDS").split("000");
+            final int irrelevanceThreshold = Integer.parseInt(relevanceEnv[0]);
+            final int relevanceThreshold = Integer.parseInt(relevanceEnv[1]);
+
             final LossyCountingSinkIncremental lossyCountingSink = new LossyCountingSinkIncremental(
                     new KafkaConsumer<>(bootstrapServers, topic, groupId, EventDeserializer.class),
                     bucketSize,
                     new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
-                            new MinedProcessModel(),
-                            new MicroBatchRelationCountMap()),
+                            new MicroBatchRelationCountMap<>()),
                     new EventRelationLogger(),
-                    new PrecisionChecker(),
+                    new PrecisionChecker(usePrecisionMonitoring, precisionMonitoringUrl),
                     refreshRate,
                     relevanceThreshold,
                     irrelevanceThreshold,
@@ -46,10 +51,9 @@ public class BurattinSinkMain {
                     new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
-                            new MinedProcessModel(),
-                            new MicroBatchRelationCountMap()),
+                            new LossyCountingRelationCountMap<>()),
                     new EventRelationLogger(),
-                    new PrecisionChecker(),
+                    new PrecisionChecker(usePrecisionMonitoring, precisionMonitoringUrl),
                     refreshRate,
                     ProcessModelFactory.create(processModelVariant));
             lossyCountingSink.run();

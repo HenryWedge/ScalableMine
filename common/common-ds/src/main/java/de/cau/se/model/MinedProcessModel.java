@@ -43,6 +43,25 @@ public class MinedProcessModel implements ProcessModel {
         xorGateways.remove(xorGateway);
     }
 
+    public void setCausalEvents(Set<DirectlyFollowsRelation> causalEvents) {
+        this.causalEvents = causalEvents;
+    }
+
+    public Set<Gateway> getAndGateways() {
+        return andGateways;
+    }
+
+    public void setAndGateways(Set<Gateway> andGateways) {
+        this.andGateways = andGateways;
+    }
+
+    public Set<Gateway> getXorGateways() {
+        return xorGateways;
+    }
+
+    public void setXorGateways(Set<Gateway> xorGateways) {
+        this.xorGateways = xorGateways;
+    }
 
     @Override
     public Set<DirectlyFollowsRelation> getCausalEvents() {
@@ -57,17 +76,5 @@ public class MinedProcessModel implements ProcessModel {
     @Override
     public Set<Gateway> getChoiceGateways() {
         return xorGateways;
-    }
-
-    public void setCausalEvents(Set<DirectlyFollowsRelation> causalEvents) {
-        this.causalEvents = causalEvents;
-    }
-
-    public void setAndGateways(Set<Gateway> andGateways) {
-        this.andGateways = andGateways;
-    }
-
-    public void setXorGateways(Set<Gateway> xorGateways) {
-        this.xorGateways = xorGateways;
     }
 }

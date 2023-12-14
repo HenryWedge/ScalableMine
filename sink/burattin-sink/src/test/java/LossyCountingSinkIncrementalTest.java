@@ -32,7 +32,7 @@ public class LossyCountingSinkIncrementalTest {
         processModel = new MinedProcessModel();
 
         eventRelationLogger = new EventRelationLogger();
-        precisionChecker = new PrecisionChecker();
+        precisionChecker = new PrecisionChecker(false, "");
 
         testee = new LossyCountingSinkIncremental(
                 consumer,
@@ -40,7 +40,6 @@ public class LossyCountingSinkIncrementalTest {
                 new ModelUpdateService(
                         0.3,
                         0.3,
-                        processModel,
                         new LossyCountingRelationCountMap<>()),
                 eventRelationLogger,
                 precisionChecker,

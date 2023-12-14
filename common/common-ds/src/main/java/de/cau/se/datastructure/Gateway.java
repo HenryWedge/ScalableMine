@@ -1,8 +1,10 @@
 package de.cau.se.datastructure;
 
+import de.cau.se.marker.Pattern;
+
 import java.util.Objects;
 
-public class Gateway {
+public class Gateway implements Pattern {
     private GatewayType gatewayType;
     private String connectingEvent;
     private BranchPair branchPair;

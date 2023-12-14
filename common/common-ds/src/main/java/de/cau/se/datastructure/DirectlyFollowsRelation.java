@@ -1,10 +1,11 @@
 package de.cau.se.datastructure;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.cau.se.marker.Pattern;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-public class DirectlyFollowsRelation {
+public class DirectlyFollowsRelation implements Pattern {
     private String predecessor;
     private String successor;
 

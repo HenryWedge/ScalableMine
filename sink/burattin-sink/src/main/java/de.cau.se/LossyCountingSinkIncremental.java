@@ -25,6 +25,7 @@ public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
     private final EventRelationLogger eventRelationLogger;
     private final PrecisionChecker precisionChecker;
     private final ProcessModel originalProcessModel;
+    private final MinedProcessModel processModel;
     private final Set<DirectlyFollowsRelation> irrelevantDirectlyFollowsRelations = new HashSet<>();
     private final Set<DirectlyFollowsRelation> relevantDirectlyFollowsRelations = new HashSet<>();
     private final int bucketSize;
@@ -50,6 +51,7 @@ public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
         this.relevanceThreshold = relevanceThreshold;
         this.irrelevanceThreshold = irrelevanceThreshold;
         this.originalProcessModel = originalProcessModel;
+        this.processModel = new MinedProcessModel();
     }
 
     @Override
@@ -80,15 +82,14 @@ public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
 
     private void performFullModelUpdate() {
         if (n % refreshRate == 0) {
-            relevantDirectlyFollowsRelations.forEach(modelUpdateService::update);
-            irrelevantDirectlyFollowsRelations.forEach(modelUpdateService::remove);
+            relevantDirectlyFollowsRelations.forEach(relation -> modelUpdateService.update(processModel, relation));
+            irrelevantDirectlyFollowsRelations.forEach(relation -> modelUpdateService.remove(processModel, relation));
 
             irrelevantDirectlyFollowsRelations.clear();
             relevantDirectlyFollowsRelations.clear();
 
-            MinedProcessModel minedProcessModel = modelUpdateService.getProcessModel();
-            eventRelationLogger.logRelations(minedProcessModel);
-            precisionChecker.calculatePrecision(originalProcessModel, minedProcessModel);
+            eventRelationLogger.logRelations(processModel);
+            precisionChecker.calculatePrecision(originalProcessModel, processModel);
         }
     }
 

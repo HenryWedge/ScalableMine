@@ -1,10 +1,12 @@
 package de.cau.se.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cau.se.datastructure.BranchPair;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.map.result.RelationCountMap;
-
+import de.cau.se.processmodel.MediumProcessModel;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -34,11 +36,11 @@ public class ModelUpdateService {
      *
      * @param directlyFollowsRelation that updates the model
      */
-    public void update(final DirectlyFollowsRelation directlyFollowsRelation) {
-        update(directlyFollowsRelation, 1);
+    public void update(final MinedProcessModel processModel, final DirectlyFollowsRelation directlyFollowsRelation) {
+        update(processModel, directlyFollowsRelation, 1);
     }
 
-    public void remove(DirectlyFollowsRelation directlyFollowsRelation) {
+    public void remove(final MinedProcessModel processModel, DirectlyFollowsRelation directlyFollowsRelation) {
         processModel.getCausalEvents().remove(directlyFollowsRelation);
         processModel.getChoiceGateways().removeIf(gateway -> gateway.isBasedOnDirectlyFollowsRelation(directlyFollowsRelation));
         processModel.getParallelGateways().removeIf(gateway -> gateway.isBasedOnDirectlyFollowsRelation(directlyFollowsRelation));
@@ -50,10 +52,11 @@ public class ModelUpdateService {
      * @param directlyFollowsRelation      that updates the model.
      * @param directlyFollowsRelationCount how often the directly follows relation occurred in the interval.
      */
-    public void update(final DirectlyFollowsRelation directlyFollowsRelation, final Integer directlyFollowsRelationCount) {
-        update(directlyFollowsRelation,
-                directlyFollowsRelationCount,
-                Set.of(directlyFollowsRelation.getSuccessor(), directlyFollowsRelation.getPredecessor()));
+    public void update(final MinedProcessModel processModel, final DirectlyFollowsRelation directlyFollowsRelation, final Integer directlyFollowsRelationCount) {
+        update(processModel,
+               directlyFollowsRelation,
+               directlyFollowsRelationCount,
+               Set.of(directlyFollowsRelation.getSuccessor(), directlyFollowsRelation.getPredecessor()));
     }
 
     /**
@@ -64,13 +67,14 @@ public class ModelUpdateService {
      * @param directlyFollowsCount    how often the directly follows relation occurred in the interval.
      * @param activitiesToUpdate      activities for which new gateways are computed.
      */
-    public void update(final DirectlyFollowsRelation directlyFollowsRelation,
+    public void update(final MinedProcessModel processModel,
+                       final DirectlyFollowsRelation directlyFollowsRelation,
                        final Integer directlyFollowsCount,
                        final Set<String> activitiesToUpdate) {
         directlyFollowsRelationCountMap.insertOrUpdate(directlyFollowsRelation, directlyFollowsCount);
-        findCausalEvents(directlyFollowsRelation);
-        updateSplits(activitiesToUpdate);
-        updateJoins(activitiesToUpdate);
+        updateCausalEvents(processModel, directlyFollowsRelation);
+        updateSplits(processModel, activitiesToUpdate);
+        updateJoins(processModel, activitiesToUpdate);
     }
 
     /**

@@ -7,7 +7,6 @@ import java.util.Objects;
 
 public class Event implements Serializable {
     private int traceId;
-
     private String activity;
 
     public Event() {

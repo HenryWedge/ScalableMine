@@ -51,6 +51,10 @@
             <version>29.0-jre</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.example</groupId>
+            <artifactId>common-ds</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

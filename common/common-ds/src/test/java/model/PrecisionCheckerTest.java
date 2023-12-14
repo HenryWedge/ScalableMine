@@ -12,6 +12,6 @@ public class PrecisionCheckerTest {
 
     @BeforeEach
     public void prepare() {
-        testee = new PrecisionChecker();
+        testee = new PrecisionChecker(false, "");
     }
 }

@@ -2,6 +2,7 @@ import de.cau.se.*;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
 import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
+import de.cau.se.map.result.LossyCountingRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.FilterProcessor;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +33,7 @@ public class FilterProcessorTest {
         openMocks(this);
         traceIdMap = new TraceIdMap();
         directlyFollowsRelationCountMap = new DirectlyFollowsRelationCountMap();
-        testee = new FilterProcessor(sender, consumer, directlyFollowsRelationCountMap, traceIdMap, 3, 2);
+        testee = new FilterProcessor(sender, consumer, traceIdMap, 5,3, 2);
     }
 
     @Test

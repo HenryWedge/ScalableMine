@@ -3,7 +3,9 @@ package de.cau.se;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
 import de.cau.se.datastructure.Result;
+import de.cau.se.datastructure.TaggedRelation;
 import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
+import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +13,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 
-public class FilterProcessor extends AbstractProcessor<Event, Result> {
+public class FilterProcessor extends AbstractProcessor<Event, TaggedRelation> {
 
-    private final DirectlyFollowsRelationCountMap directlyFollowsCountMap;
+    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> directlyFollowsCountMap;
 
     private final TraceIdMap traceIdEventMap;
 
@@ -21,41 +23,40 @@ public class FilterProcessor extends AbstractProcessor<Event, Result> {
 
     private final Integer relevanceThreshold;
 
-    public FilterProcessor(final AbstractProducer<Result> sender,
+    private final Integer irrelevanceThreshold;
+
+    public FilterProcessor(final AbstractProducer<TaggedRelation> sender,
                            final KafkaConsumer<Event> consumer,
-                           final DirectlyFollowsRelationCountMap directlyFollowsCountMap,
                            final TraceIdMap traceIdEventMap,
                            final Integer bucketSize,
-                           final Integer relevanceThreshold) {
+                           final Integer relevanceThreshold,
+                           final Integer irrelevanceThreshold) {
         super(sender, consumer);
-        this.directlyFollowsCountMap = directlyFollowsCountMap;
+        this.directlyFollowsCountMap = new MicroBatchRelationCountMap<>();
         this.traceIdEventMap = traceIdEventMap;
         this.bucketSize = bucketSize;
         this.relevanceThreshold = relevanceThreshold;
+        this.irrelevanceThreshold = irrelevanceThreshold;
     }
 
     @Override
     public void receive(final Event event) {
         updateTraceIdAndDirectlyFollowsMap(event);
         if (directlyFollowsCountMap.size() >= bucketSize) {
-            sendResultMessage(relevanceThreshold);
+            sendResultMessage();
         }
     }
 
     private void updateTraceIdAndDirectlyFollowsMap(final Event event) {
         final String lastActivity = traceIdEventMap.accept(event.getTraceId(), event.getActivity());
         if (lastActivity != null) {
-            directlyFollowsCountMap.accept(new DirectlyFollowsRelation(lastActivity, event.getActivity()));
+            directlyFollowsCountMap.insertOrUpdate(new DirectlyFollowsRelation(lastActivity, event.getActivity()), 1);
         }
     }
 
-    private void sendResultMessage(final Integer relevanceThreshold) {
-        final List<Result> resultList = directlyFollowsCountMap.getAllRelevantEvents(relevanceThreshold);
-
-        System.out.println("Bucket filled. Clearing directly follows map");
+    private void sendResultMessage() {
+        directlyFollowsCountMap.getRelevantRelations(relevanceThreshold).stream().map(relation -> new TaggedRelation(relation, TaggedRelation.Tag.RELEVANT)).forEach(super::send);
+        directlyFollowsCountMap.getIrrelevantRelations(irrelevanceThreshold).stream().map(relation -> new TaggedRelation(relation, TaggedRelation.Tag.IRRELEVANT)).forEach(super::send);
         directlyFollowsCountMap.clear();
-
-        System.out.println("Sending results");
-        resultList.forEach(super::send);
     }
 }

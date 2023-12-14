@@ -1,17 +1,16 @@
 import de.cau.se.FilterSink;
 import de.cau.se.datastructure.BranchPair;
-import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
-import de.cau.se.model.*;
+import de.cau.se.model.CountBasedMinedProcessModel;
+import de.cau.se.model.EventRelationLogger;
+import de.cau.se.model.MinedProcessModel;
+import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.SmallProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,7 +31,7 @@ public class FilterSinkTest {
         processModel = new MinedProcessModel();
 
         eventRelationLogger = new EventRelationLogger();
-        precisionChecker = new PrecisionChecker();
+        precisionChecker = new PrecisionChecker(false, "");
 
         testee = new FilterSink(
                 consumer,

@@ -13,8 +13,6 @@ public abstract class AbstractProcessor<I,O> {
 
     private final Consumer<String, I> consumer;
 
-    private int messagesSent = 0;
-
     public AbstractProcessor(final Producer<String, O> producer, final Consumer<String, I> consumer) {
         this.producer = producer;
         this.consumer = consumer;
@@ -23,13 +21,7 @@ public abstract class AbstractProcessor<I,O> {
     protected abstract void receive(I input);
 
     protected void send(O output) {
-        System.out.println("Result was sent");
-        messagesSent++;
-
         producer.send(new ProducerRecord<>("output", output));
-        if (messagesSent % 1000 == 0) {
-            producer.flush();
-        }
     }
 
     public void run() {

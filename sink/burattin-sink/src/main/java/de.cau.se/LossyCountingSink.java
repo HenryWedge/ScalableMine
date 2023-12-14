@@ -23,6 +23,7 @@ public class LossyCountingSink extends AbstractConsumer<Event> {
     private final EventRelationLogger eventRelationLogger;
     private final PrecisionChecker precisionChecker;
     private final ProcessModel originalProcessModel;
+    private final MinedProcessModel processModel;
     private final int bucketSize;
     private final int refreshRate;
 
@@ -40,6 +41,7 @@ public class LossyCountingSink extends AbstractConsumer<Event> {
         this.precisionChecker = precisionChecker;
         this.refreshRate = refreshRate;
         this.originalProcessModel = originalProcessModel;
+        this.processModel = new MinedProcessModel();
     }
 
     @Override
@@ -76,10 +78,9 @@ public class LossyCountingSink extends AbstractConsumer<Event> {
 
     private void performFullModelUpdate() {
         if (n % refreshRate == 0) {
-            modelUpdateService.update(relationCountMap, activityMap.keySet());
-            MinedProcessModel minedProcessModel = modelUpdateService.getProcessModel();
-            eventRelationLogger.logRelations(minedProcessModel);
-            precisionChecker.calculatePrecision(originalProcessModel, minedProcessModel);
+            modelUpdateService.updateProcessModel(processModel, relationCountMap, activityMap.keySet());
+            eventRelationLogger.logRelations(processModel);
+            precisionChecker.calculatePrecision(originalProcessModel, processModel);
         }
     }
 

@@ -6,6 +6,7 @@ import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
+import de.cau.se.processmodel.ProcessModel;
 
 /**
  * The aggregation processor mines parts of a process mining model. These parts are sent to the next stage.
@@ -17,6 +18,8 @@ public class AggregationProcessor extends AbstractProcessor<Event, MinedProcessM
     private final TraceIdMap traceIdEventMap;
 
     private final Integer bucketSize;
+
+    private MinedProcessModel processModel;
 
     private final ModelUpdateService modelUpdateService;
 
@@ -35,6 +38,7 @@ public class AggregationProcessor extends AbstractProcessor<Event, MinedProcessM
 
     @Override
     public void receive(Event event) {
+        processModel = new MinedProcessModel();
         updateTraceIdAndDirectlyFollowsMap(event);
 
         if (directlyFollowsCountMap.size() >= bucketSize) {
@@ -52,17 +56,15 @@ public class AggregationProcessor extends AbstractProcessor<Event, MinedProcessM
     }
 
     private void clearBucket() {
-        System.out.println("Bucket filled. Clearing directly follows map");
         directlyFollowsCountMap.clear();
     }
 
     private void processBucket() {
-        directlyFollowsCountMap.forEach((a, b) -> modelUpdateService.update(a));
+        directlyFollowsCountMap.keySet().forEach(relation -> modelUpdateService.update(processModel, relation));
         sendResults();
     }
 
     private void sendResults() {
-        super.send(modelUpdateService.getProcessModel());
-        System.out.println("Sending results");
+        super.send(processModel);
     }
 }

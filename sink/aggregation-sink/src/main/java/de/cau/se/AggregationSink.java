@@ -1,17 +1,21 @@
 package de.cau.se;
 
-import de.cau.se.datastructure.DirectlyFollowsRelation;
-import de.cau.se.datastructure.Result;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.datastructure.TaggedRelation;
 import de.cau.se.model.EventRelationLogger;
+import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
 
-public class AggregationSink extends AbstractConsumer<Result> {
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> microBatchRelationCountMap;
+public class AggregationSink extends AbstractConsumer<TaggedRelation> {
+
+    private final Set<TaggedRelation> relationBuffer;
 
     private final ModelUpdateService modelUpdateService;
 
@@ -19,49 +23,48 @@ public class AggregationSink extends AbstractConsumer<Result> {
 
     private final Integer refreshRate;
 
-    private final Integer relevanceThreshold;
-
-    private final Integer irrelevanceThreshold;
-
     private int n = 0;
 
-    private final ProcessModel processModel;
+    private final ProcessModel originalProcessModel;
+    private final MinedProcessModel processModel;
 
-    public AggregationSink(final Consumer<String, Result> consumer,
-                           final MicroBatchRelationCountMap<DirectlyFollowsRelation> microBatchRelationCountMap,
+    public AggregationSink(final Consumer<String, TaggedRelation> consumer,
                            final int refreshRate,
-                           final int relevanceThreshold,
-                           final int irrelevanceThreshold,
                            final ModelUpdateService modelUpdateService,
                            final EventRelationLogger eventRelationLogger,
                            final PrecisionChecker precisionChecker,
-                           final ProcessModel processModel) {
+                           final ProcessModel originalProcessModel) {
         super(consumer);
-        this.microBatchRelationCountMap = microBatchRelationCountMap;
+        this.relationBuffer = new HashSet<>();
         this.refreshRate = refreshRate;
-        this.relevanceThreshold = relevanceThreshold;
-        this.irrelevanceThreshold = irrelevanceThreshold;
         this.modelUpdateService = modelUpdateService;
         this.eventRelationLogger = eventRelationLogger;
         this.precisionChecker = precisionChecker;
-        this.processModel = processModel;
+        this.processModel = new MinedProcessModel();
+        this.originalProcessModel = originalProcessModel;
     }
 
     private final EventRelationLogger eventRelationLogger;
 
     @Override
-    public void receive(final Result result) {
+    public void receive(final TaggedRelation relation) {
         n++;
-        microBatchRelationCountMap.insertOrUpdate(result.getDirectlyFollows(), result.getCount());
+        relationBuffer.add(relation);
 
         if (n % refreshRate == 0) {
-            microBatchRelationCountMap.getRelevantRelations(relevanceThreshold).forEach(modelUpdateService::update);
-            microBatchRelationCountMap.getIrrelevantRelations(irrelevanceThreshold).forEach(modelUpdateService::remove);
-            microBatchRelationCountMap.clear();
+            relationBuffer.forEach(
+                    taggedRelation -> {
+                        if (TaggedRelation.Tag.RELEVANT == taggedRelation.getTag()) {
+                            modelUpdateService.update(processModel, taggedRelation.getDirectlyFollows());
+                        } else {
+                            modelUpdateService.remove(processModel, taggedRelation.getDirectlyFollows());
+                        }
+                    }
+            );
+            relationBuffer.clear();
 
-            modelUpdateService.update(result.getDirectlyFollows(), result.getCount());
             eventRelationLogger.logRelations(processModel);
-            precisionChecker.calculatePrecision(processModel, modelUpdateService.getProcessModel());
+            precisionChecker.calculatePrecision(originalProcessModel, processModel);
         }
     }
 }

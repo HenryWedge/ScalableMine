@@ -31,15 +31,14 @@ public class LossyCountingSinkTest {
         processModel = new MinedProcessModel();
 
         eventRelationLogger = new EventRelationLogger();
-        precisionChecker = new PrecisionChecker();
+        precisionChecker = new PrecisionChecker(false, "");
 
         testee = new LossyCountingSink(
                 consumer,
-                5,
+                3,
                 new ModelUpdateService(
                         0.3,
                         0.3,
-                        processModel,
                         new LossyCountingRelationCountMap<>()),
                 eventRelationLogger,
                 precisionChecker,
@@ -85,6 +84,17 @@ public class LossyCountingSinkTest {
         testee.receive(new Event(3, "A"));
         testee.receive(new Event(3, "D"));
         testee.receive(new Event(3, "C"));
+
+        testee.receive(new Event(4, "A"));
+        testee.receive(new Event(4, "B"));
+        testee.receive(new Event(4, "C"));
+        testee.receive(new Event(5, "A"));
+        testee.receive(new Event(5, "D"));
+        testee.receive(new Event(5, "B"));
+        testee.receive(new Event(5, "C"));
+        testee.receive(new Event(6, "A"));
+        testee.receive(new Event(6, "D"));
+        testee.receive(new Event(6, "C"));
 
         assertEquals(5, processModel.getCausalEvents().size());
         assertEquals(3, processModel.getParallelGateways().size());

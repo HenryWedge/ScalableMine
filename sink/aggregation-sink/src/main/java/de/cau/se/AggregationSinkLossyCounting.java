@@ -4,6 +4,7 @@ import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Result;
 import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
+import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModel;
@@ -23,28 +24,25 @@ public class AggregationSinkLossyCounting extends AbstractConsumer<Result> {
 
     private final Integer refreshRate;
 
-    private final Integer relevanceThreshold;
-
     private int n = 0;
-
-    private final ProcessModel processModel;
+    private final ProcessModel originalProcessModel;
+    private final MinedProcessModel processModel;
 
     public AggregationSinkLossyCounting(final Consumer<String, Result> consumer,
                                         final MicroBatchRelationCountMap<DirectlyFollowsRelation> microBatchRelationCountMap,
                                         final int refreshRate,
-                                        final int relevanceThreshold,
                                         final ModelUpdateService modelUpdateService,
                                         final EventRelationLogger eventRelationLogger,
                                         final PrecisionChecker precisionChecker,
-                                        final ProcessModel processModel) {
+                                        final ProcessModel originalProcessModel) {
         super(consumer);
         this.relationCountMap = microBatchRelationCountMap;
         this.refreshRate = refreshRate;
-        this.relevanceThreshold = relevanceThreshold;
         this.modelUpdateService = modelUpdateService;
         this.eventRelationLogger = eventRelationLogger;
         this.precisionChecker = precisionChecker;
-        this.processModel = processModel;
+        this.originalProcessModel = originalProcessModel;
+        this.processModel = new MinedProcessModel();
     }
 
     private final EventRelationLogger eventRelationLogger;
@@ -59,15 +57,14 @@ public class AggregationSinkLossyCounting extends AbstractConsumer<Result> {
                 .stream()
                 .map(directlyFollowsRelation ->
                         Set.of(directlyFollowsRelation.getPredecessor(),
-                               directlyFollowsRelation.getPredecessor()))
+                               directlyFollowsRelation.getSuccessor()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
 
         if (n % refreshRate == 0) {
-            relationCountMap.removeIrrelevant(relevanceThreshold);
-            modelUpdateService.update(relationCountMap, frequentActivities);
+            modelUpdateService.updateProcessModel(processModel, relationCountMap, frequentActivities);
             eventRelationLogger.logRelations(processModel);
-            precisionChecker.calculatePrecision(processModel, modelUpdateService.getProcessModel());
+            precisionChecker.calculatePrecision(originalProcessModel, processModel);
             relationCountMap.clear();
         }
     }

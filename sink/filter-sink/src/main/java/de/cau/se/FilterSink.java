@@ -2,11 +2,14 @@ package de.cau.se;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
+import de.cau.se.map.result.LossyCountingRelationCountMap;
 import de.cau.se.map.result.RelationCountMap;
 import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.*;
 import de.cau.se.processmodel.ProcessModel;
 import org.apache.kafka.clients.consumer.Consumer;
+
+import java.util.Set;
 
 public class FilterSink extends AbstractConsumer<MinedProcessModel> {
 
@@ -46,27 +49,29 @@ public class FilterSink extends AbstractConsumer<MinedProcessModel> {
             return;
         }
 
-        receivingProcessModel.getCausalEvents().forEach(causalEvent -> causalEvents.insertOrUpdate(causalEvent, 1));
-        receivingProcessModel.getParallelGateways().forEach(parallelGateway -> parallelGateways.insertOrUpdate(parallelGateway, 1));
-        receivingProcessModel.getChoiceGateways().forEach(choiceGateway -> choiceGateways.insertOrUpdate(choiceGateway, 1));
+        updateStoredEventFromReceivingEvent(receivingProcessModel.getCausalEvents(), causalEvents);
+        updateStoredEventFromReceivingEvent(receivingProcessModel.getParallelGateways(), parallelGateways);
+        updateStoredEventFromReceivingEvent(receivingProcessModel.getChoiceGateways(), choiceGateways);
 
         if (receivedEvents % refreshRate == 0) {
-            causalEvents.getIrrelevantRelations(irrelevanceThreshold).forEach(minedProcessModel.getCausalEventMap()::remove);
-            parallelGateways.getIrrelevantRelations(irrelevanceThreshold).forEach(minedProcessModel.getAndGateways()::remove);
-            choiceGateways.getIrrelevantRelations(irrelevanceThreshold).forEach(minedProcessModel.getXorGateways()::remove);
-
-            causalEvents.getRelevantRelations(relevanceThreshold).forEach(minedProcessModel.getCausalEvents()::add);
-            parallelGateways.getRelevantRelations(relevanceThreshold).forEach(gateway -> minedProcessModel.getAndGateways().put(gateway, 1));
-            choiceGateways.getRelevantRelations(relevanceThreshold).forEach(gateway -> minedProcessModel.getXorGateways().put(gateway, 1));
-
-            causalEvents.clear();
-            parallelGateways.clear();
-            choiceGateways.clear();
+            updateModelFromCollectedPattern(causalEvents, minedProcessModel.getCausalEventMap());
+            updateModelFromCollectedPattern(parallelGateways, minedProcessModel.getAndGateways());
+            updateModelFromCollectedPattern(choiceGateways, minedProcessModel.getXorGateways());
 
             eventRelationLogger.logRelations(minedProcessModel);
             precisionChecker.calculatePrecision(processModel, minedProcessModel);
         }
 
         receivedEvents++;
+    }
+
+    private <T> void updateModelFromCollectedPattern(final MicroBatchRelationCountMap<T> storedRelation, final MicroBatchRelationCountMap<T> modelRelation) {
+        storedRelation.getIrrelevantRelations(irrelevanceThreshold).forEach(modelRelation::remove);
+        storedRelation.getRelevantRelations(relevanceThreshold).forEach(pattern -> modelRelation.insertOrUpdate(pattern, 1));
+        storedRelation.clear();
+    }
+
+    private <T> void updateStoredEventFromReceivingEvent(final Set<T> receivedRelation, final MicroBatchRelationCountMap<T> storedRelation) {
+        receivedRelation.forEach(pattern -> storedRelation.insertOrUpdate(pattern, 1));
     }
 }

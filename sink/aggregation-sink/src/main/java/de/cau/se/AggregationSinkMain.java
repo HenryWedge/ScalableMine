@@ -2,7 +2,6 @@ package de.cau.se;
 
 import de.cau.se.map.result.MicroBatchRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
-import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModelFactory;
@@ -17,24 +16,21 @@ public class AggregationSinkMain {
         final Double andThreshold = Double.parseDouble(System.getenv("AND_THRESHOLD"));
         final Double dependencyThreshold = Double.parseDouble(System.getenv("DEPENDENCY_THRESHOLD"));
         final int processModelVariant = Integer.parseInt(System.getenv("PROCESS_MODEL_VARIANT"));
-        final int refreshRate = Integer.parseInt(System.getenv("AGGREGATE_COUNT"));
-        final int relevanceThreshold = Integer.parseInt(System.getenv("RELEVANCE_THRESHOLD"));
-        final int irrelevanceThreshold = Integer.parseInt(System.getenv("IRRELEVANCE_THRESHOLD"));
+        final int refreshRate = Integer.parseInt(System.getenv("REFRESH_RATE"));
         final boolean isIncremental = Boolean.parseBoolean(System.getenv("IS_INCREMENTAL"));
+        final boolean usePrecisionMonitoring = Boolean.parseBoolean(System.getenv("USE_PRECISION_MONITORING"));
+        final String precisionMonitoringUrl = System.getenv("PRECISION_MONITORING_URL");
 
         if (isIncremental) {
             final AggregationSink aggregationSink = new AggregationSink(
-                    new KafkaConsumer<>(bootstrapServers, topic, groupId, ResultDeserializer.class),
-                    new MicroBatchRelationCountMap<>(),
+                    new KafkaConsumer<>(bootstrapServers, topic, groupId, TaggedRelationDeserializer.class),
                     refreshRate,
-                    relevanceThreshold,
-                    irrelevanceThreshold,
                     new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
-                            new MinedProcessModel(), new MicroBatchRelationCountMap<>()),
+                            new MicroBatchRelationCountMap<>()),
                     new EventRelationLogger(),
-                    new PrecisionChecker(),
+                    new PrecisionChecker(usePrecisionMonitoring, precisionMonitoringUrl),
                     ProcessModelFactory.create(processModelVariant));
 
             aggregationSink.run();
@@ -43,13 +39,12 @@ public class AggregationSinkMain {
                     new KafkaConsumer<>(bootstrapServers, topic, groupId, ResultDeserializer.class),
                     new MicroBatchRelationCountMap<>(),
                     refreshRate,
-                    relevanceThreshold,
                     new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
-                            new MinedProcessModel(), new MicroBatchRelationCountMap<>()),
+                            new MicroBatchRelationCountMap<>()),
                     new EventRelationLogger(),
-                    new PrecisionChecker(),
+                    new PrecisionChecker(usePrecisionMonitoring, precisionMonitoringUrl),
                     ProcessModelFactory.create(processModelVariant));
 
             aggregationSink.run();
