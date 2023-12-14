@@ -1,0 +1,176 @@
+{
+  "executionId": 266,
+  "name": "kafka-execution",
+  "benchmark": "kafka-benchmark",
+  "load": {
+    "loadType": "EventsPerSecond",
+    "loadValues": [
+      10000,
+      20000,
+      30000,
+      40000,
+      50000,
+      60000,
+      70000,
+      80000
+    ]
+  },
+  "resources": {
+    "resourceType": "Instances",
+    "resourceValues": [
+      1,
+      2,
+      4
+    ]
+  },
+  "slos": [
+    {
+      "name": "lag trend",
+      "properties": {
+        "consumerGroup": "output-group",
+        "threshold": "100"
+      }
+    }
+  ],
+  "execution": {
+    "metric": "capacity",
+    "strategy": {
+      "name": "BinarySearch",
+      "restrictions": [
+        "LowerBound"
+      ],
+      "guessStrategy": "",
+      "searchStrategy": "BinarySearch"
+    },
+    "duration$delegate": {
+      "value": 90
+    },
+    "repetitions$delegate": {
+      "value": 1
+    },
+    "loadGenerationDelay": 30,
+    "afterTeardownDelay": 5
+  },
+  "configOverrides": [
+    {
+      "patcher": {
+        "type": "NodeSelectorPatcher",
+        "resource": "processor-deployment.yaml",
+        "properties": {
+          "variableName": "env"
+        }
+      },
+      "value": "dev"
+    },
+    {
+      "patcher": {
+        "type": "NodeSelectorPatcher",
+        "resource": "sink-deployment.yaml",
+        "properties": {
+          "variableName": "env"
+        }
+      },
+      "value": "dev"
+    },
+    {
+      "patcher": {
+        "type": "NodeSelectorPatcher",
+        "resource": "source-deployment.yaml",
+        "properties": {
+          "variableName": "env"
+        }
+      },
+      "value": "dev"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "processor-deployment.yaml",
+        "properties": {
+          "variableName": "deployed-for-execution"
+        }
+      },
+      "value": "kafka-execution"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "sink-deployment.yaml",
+        "properties": {
+          "variableName": "deployed-for-execution"
+        }
+      },
+      "value": "kafka-execution"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "source-deployment.yaml",
+        "properties": {
+          "variableName": "deployed-for-execution"
+        }
+      },
+      "value": "kafka-execution"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "processor-deployment.yaml",
+        "properties": {
+          "variableName": "deployed-for-benchmark"
+        }
+      },
+      "value": "kafka-benchmark"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "sink-deployment.yaml",
+        "properties": {
+          "variableName": "deployed-for-benchmark"
+        }
+      },
+      "value": "kafka-benchmark"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "source-deployment.yaml",
+        "properties": {
+          "variableName": "deployed-for-benchmark"
+        }
+      },
+      "value": "kafka-benchmark"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "processor-deployment.yaml",
+        "properties": {
+          "variableName": "app.kubernetes.io/created-by"
+        }
+      },
+      "value": "theodolite"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "sink-deployment.yaml",
+        "properties": {
+          "variableName": "app.kubernetes.io/created-by"
+        }
+      },
+      "value": "theodolite"
+    },
+    {
+      "patcher": {
+        "type": "LabelPatcher",
+        "resource": "source-deployment.yaml",
+        "properties": {
+          "variableName": "app.kubernetes.io/created-by"
+        }
+      },
+      "value": "theodolite"
+    }
+  ]
+}

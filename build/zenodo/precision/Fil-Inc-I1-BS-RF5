@@ -1,0 +1,4 @@
+bucketSize,precision
+ 50,0.06
+100,0.18
+200,0.34

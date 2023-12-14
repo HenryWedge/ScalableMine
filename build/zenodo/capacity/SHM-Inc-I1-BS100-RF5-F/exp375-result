@@ -1,0 +1,145 @@
+{
+  "metric": "CAPACITY",
+  "results": [
+    [
+      {
+        "first": 27500,
+        "second": 10001
+      },
+      false
+    ],
+    [
+      {
+        "first": 20000,
+        "second": 10001
+      },
+      false
+    ],
+    [
+      {
+        "first": 15000,
+        "second": 10001
+      },
+      false
+    ],
+    [
+      {
+        "first": 10000,
+        "second": 10001
+      },
+      true
+    ],
+    [
+      {
+        "first": 27500,
+        "second": 10002
+      },
+      false
+    ],
+    [
+      {
+        "first": 20000,
+        "second": 10002
+      },
+      true
+    ],
+    [
+      {
+        "first": 25000,
+        "second": 10002
+      },
+      false
+    ],
+    [
+      {
+        "first": 22500,
+        "second": 10002
+      },
+      false
+    ],
+    [
+      {
+        "first": 27500,
+        "second": 10003
+      },
+      true
+    ],
+    [
+      {
+        "first": 40000,
+        "second": 10003
+      },
+      false
+    ],
+    [
+      {
+        "first": 35000,
+        "second": 10003
+      },
+      false
+    ],
+    [
+      {
+        "first": 30000,
+        "second": 10003
+      },
+      true
+    ],
+    [
+      {
+        "first": 27500,
+        "second": 10004
+      },
+      true
+    ],
+    [
+      {
+        "first": 40000,
+        "second": 10004
+      },
+      true
+    ],
+    [
+      {
+        "first": 50000,
+        "second": 10004
+      },
+      false
+    ],
+    [
+      {
+        "first": 45000,
+        "second": 10004
+      },
+      false
+    ],
+    [
+      {
+        "first": 27500,
+        "second": 20003
+      },
+      true
+    ],
+    [
+      {
+        "first": 40000,
+        "second": 20003
+      },
+      false
+    ],
+    [
+      {
+        "first": 35000,
+        "second": 20003
+      },
+      true
+    ]
+  ],
+  "optInstances": {
+    "10001": 10000,
+    "10002": 20000,
+    "10003": 30000,
+    "10004": 40000,
+    "20003": 35000
+  }
+}

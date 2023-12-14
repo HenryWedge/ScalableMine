@@ -1,0 +1,73 @@
+{
+  "metric": "CAPACITY",
+  "results": [
+    [
+      {
+        "first": 50000,
+        "second": 1
+      },
+      false
+    ],
+    [
+      {
+        "first": 30000,
+        "second": 1
+      },
+      false
+    ],
+    [
+      {
+        "first": 20000,
+        "second": 1
+      },
+      true
+    ],
+    [
+      {
+        "first": 50000,
+        "second": 2
+      },
+      true
+    ],
+    [
+      {
+        "first": 70000,
+        "second": 2
+      },
+      false
+    ],
+    [
+      {
+        "first": 60000,
+        "second": 2
+      },
+      false
+    ],
+    [
+      {
+        "first": 50000,
+        "second": 4
+      },
+      true
+    ],
+    [
+      {
+        "first": 70000,
+        "second": 4
+      },
+      true
+    ],
+    [
+      {
+        "first": 80000,
+        "second": 4
+      },
+      true
+    ]
+  ],
+  "optInstances": {
+    "1": 20000,
+    "2": 50000,
+    "4": 80000
+  }
+}

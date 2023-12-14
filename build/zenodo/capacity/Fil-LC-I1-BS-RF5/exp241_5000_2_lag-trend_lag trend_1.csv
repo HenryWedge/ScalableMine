@@ -1,0 +1,16 @@
+labels,timestamp,value
+{consumergroup=output-group},1702124003,46661
+{consumergroup=output-group},1702124008,46661
+{consumergroup=output-group},1702124013,46661
+{consumergroup=output-group},1702124018,62064
+{consumergroup=output-group},1702124023,62064
+{consumergroup=output-group},1702124028,62064
+{consumergroup=output-group},1702124033,75608
+{consumergroup=output-group},1702124038,75608
+{consumergroup=output-group},1702124043,75608
+{consumergroup=output-group},1702124048,89518
+{consumergroup=output-group},1702124053,89518
+{consumergroup=output-group},1702124058,89518
+{consumergroup=output-group},1702124063,103117
+{consumergroup=output-group},1702124068,103117
+{consumergroup=output-group},1702124073,103117

@@ -1,0 +1,102 @@
+{
+  "metric": "CAPACITY",
+  "results": [
+    [
+      {
+        "first": 10000,
+        "second": 1
+      },
+      false
+    ],
+    [
+      {
+        "first": 2500,
+        "second": 1
+      },
+      false
+    ],
+    [
+      {
+        "first": 1000,
+        "second": 1
+      },
+      false
+    ],
+    [
+      {
+        "first": 50,
+        "second": 1
+      },
+      true
+    ],
+    [
+      {
+        "first": 10000,
+        "second": 5
+      },
+      false
+    ],
+    [
+      {
+        "first": 2500,
+        "second": 5
+      },
+      true
+    ],
+    [
+      {
+        "first": 5000,
+        "second": 5
+      },
+      false
+    ],
+    [
+      {
+        "first": 10000,
+        "second": 10
+      },
+      false
+    ],
+    [
+      {
+        "first": 2500,
+        "second": 10
+      },
+      true
+    ],
+    [
+      {
+        "first": 5000,
+        "second": 10
+      },
+      true
+    ],
+    [
+      {
+        "first": 10000,
+        "second": 20
+      },
+      true
+    ],
+    [
+      {
+        "first": 20000,
+        "second": 20
+      },
+      false
+    ],
+    [
+      {
+        "first": 15000,
+        "second": 20
+      },
+      false
+    ]
+  ],
+  "optInstances": {
+    "1": 50,
+    "5": 2500,
+    "10": 5000,
+    "20": 10000
+  }
+}

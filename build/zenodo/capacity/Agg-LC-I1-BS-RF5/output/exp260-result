@@ -1,0 +1,52 @@
+{
+  "metric": "CAPACITY",
+  "results": [
+    [
+      {
+        "first": 40000,
+        "second": 1
+      },
+      true
+    ],
+    [
+      {
+        "first": 60000,
+        "second": 1
+      },
+      true
+    ],
+    [
+      {
+        "first": 40000,
+        "second": 2
+      },
+      false
+    ],
+    [
+      {
+        "first": 30000,
+        "second": 2
+      },
+      true
+    ],
+    [
+      {
+        "first": 40000,
+        "second": 4
+      },
+      false
+    ],
+    [
+      {
+        "first": 30000,
+        "second": 4
+      },
+      true
+    ]
+  ],
+  "optInstances": {
+    "1": 60000,
+    "2": 30000,
+    "4": 30000
+  }
+}

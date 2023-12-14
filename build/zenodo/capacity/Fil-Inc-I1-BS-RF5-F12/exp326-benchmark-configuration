@@ -1,0 +1,161 @@
+{
+  "name": "kafka-benchmark",
+  "waitForResourcesEnabled": false,
+  "resourceTypes": [
+    {
+      "typeName": "Instances",
+      "patchers": [
+        {
+          "type": "ReplicaPatcher",
+          "resource": "processor-deployment.yaml",
+          "properties": {}
+        }
+      ]
+    },
+    {
+      "typeName": "BucketSize",
+      "patchers": [
+        {
+          "type": "EnvVarPatcher",
+          "resource": "processor-deployment.yaml",
+          "properties": {
+            "container": "processor",
+            "variableName": "BUCKET_SIZE"
+          }
+        }
+      ]
+    },
+    {
+      "typeName": "RefreshRate",
+      "patchers": [
+        {
+          "type": "EnvVarPatcher",
+          "resource": "sink-deployment.yaml",
+          "properties": {
+            "container": "sink",
+            "variableName": "REFRESH_RATE"
+          }
+        }
+      ]
+    },
+    {
+      "typeName": "RelevanceThresholds",
+      "patchers": [
+        {
+          "type": "EnvVarPatcher",
+          "resource": "sink-deployment.yaml",
+          "properties": {
+            "container": "sink",
+            "variableName": "RELEVANCE_THRESHOLDS"
+          }
+        }
+      ]
+    }
+  ],
+  "loadTypes": [
+    {
+      "typeName": "EventsPerSecond",
+      "patchers": [
+        {
+          "type": "EnvVarPatcher",
+          "resource": "source-deployment.yaml",
+          "properties": {
+            "container": "source-container",
+            "variableName": "EVENTS_PER_SECOND"
+          }
+        }
+      ]
+    }
+  ],
+  "slos": [
+    {
+      "name": "lag trend",
+      "sloType": "lag trend",
+      "prometheusUrl": "http://prometheus-operated:9090",
+      "offset$delegate": {
+        "value": 0
+      },
+      "properties": {
+        "consumerGroup": "output-group",
+        "externalSloUrl": "http://localhost:80/evaluate-slope",
+        "threshold": "0.5",
+        "warmup": "15"
+      }
+    }
+  ],
+  "kafkaConfig": {
+    "bootstrapServer": "theodolite-kafka-kafka-bootstrap:9092",
+    "topics": [
+      {
+        "name": "input",
+        "numPartitions$delegate": {
+          "value": 10
+        },
+        "replicationFactor$delegate": {
+          "value": 1
+        },
+        "removeOnly$delegate": {
+          "state": false
+        }
+      },
+      {
+        "name": "output",
+        "numPartitions$delegate": {
+          "value": 1
+        },
+        "replicationFactor$delegate": {
+          "value": 1
+        },
+        "removeOnly$delegate": {
+          "state": false
+        }
+      },
+      {
+        "name": "theodolite-.*",
+        "numPartitions$delegate": {
+          "value": 0
+        },
+        "replicationFactor$delegate": {
+          "value": 0
+        },
+        "removeOnly$delegate": {
+          "state": true
+        }
+      }
+    ]
+  },
+  "infrastructure": {
+    "resources": [],
+    "beforeActions": [],
+    "afterActions": []
+  },
+  "sut": {
+    "resources": [
+      {
+        "configMap": {
+          "name": "configmap",
+          "files": [
+            "processor-deployment.yaml",
+            "sink-deployment.yaml"
+          ]
+        }
+      }
+    ],
+    "beforeActions": [],
+    "afterActions": []
+  },
+  "loadGenerator": {
+    "resources": [
+      {
+        "configMap": {
+          "name": "configmap",
+          "files": [
+            "source-deployment.yaml"
+          ]
+        }
+      }
+    ],
+    "beforeActions": [],
+    "afterActions": []
+  }
+}

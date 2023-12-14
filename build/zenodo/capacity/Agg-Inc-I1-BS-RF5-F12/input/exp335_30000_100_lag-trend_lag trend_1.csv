@@ -1,0 +1,14 @@
+labels,timestamp,value
+{consumergroup=default},1702333761,2774147
+{consumergroup=default},1702333766,2774147
+{consumergroup=default},1702333771,2774147
+{consumergroup=default},1702333776,4093587
+{consumergroup=default},1702333781,4093587
+{consumergroup=default},1702333786,4093587
+{consumergroup=default},1702333791,4815988
+{consumergroup=default},1702333796,4815988
+{consumergroup=default},1702333801,4815988
+{consumergroup=default},1702333806,5156792
+{consumergroup=default},1702333811,5156792
+{consumergroup=default},1702333816,5156792
+{consumergroup=default},1702333821,5333802
