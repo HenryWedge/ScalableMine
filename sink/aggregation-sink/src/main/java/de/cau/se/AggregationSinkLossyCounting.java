@@ -2,7 +2,7 @@ package de.cau.se;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Result;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class AggregationSinkLossyCounting extends AbstractConsumer<Result> {
 
-    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> relationCountMap;
+    private final CountBasedRelationCountMap<DirectlyFollowsRelation> relationCountMap;
 
     private final ModelUpdateService modelUpdateService;
 
@@ -29,14 +29,14 @@ public class AggregationSinkLossyCounting extends AbstractConsumer<Result> {
     private final MinedProcessModel processModel;
 
     public AggregationSinkLossyCounting(final Consumer<String, Result> consumer,
-                                        final MicroBatchRelationCountMap<DirectlyFollowsRelation> microBatchRelationCountMap,
+                                        final CountBasedRelationCountMap<DirectlyFollowsRelation> countBasedRelationCountMap,
                                         final int refreshRate,
                                         final ModelUpdateService modelUpdateService,
                                         final EventRelationLogger eventRelationLogger,
                                         final PrecisionChecker precisionChecker,
                                         final ProcessModel originalProcessModel) {
         super(consumer);
-        this.relationCountMap = microBatchRelationCountMap;
+        this.relationCountMap = countBasedRelationCountMap;
         this.refreshRate = refreshRate;
         this.modelUpdateService = modelUpdateService;
         this.eventRelationLogger = eventRelationLogger;

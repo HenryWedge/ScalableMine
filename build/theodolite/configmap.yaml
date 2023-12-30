@@ -23,7 +23,7 @@ data:
         spec:
           containers:
             - name: sink
-              image: harbor.se.internal/hre/burattin-sink:latest
+              image: harbor.se.internal/hre/filter-sink:latest
               imagePullPolicy: Always
               resources:
                 requests:
@@ -33,10 +33,65 @@ data:
                   memory: "1Gi"
                   cpu: "1"
               env:
-                - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
-                  value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+                - name: IS_INCREMENTAL
+                  value: "false"
+                - name: REFRESH_RATE
+                  value: "5"
+                - name: PROCESS_MODEL_VARIANT
+                  value: "2"
                 - name: BOOTSTRAP_SERVER
                   value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092 
+                - name: TOPIC_NAME
+                  value: output
+                - name: GROUP_ID
+                  value: output-group
+                - name: AND_THRESHOLD
+                  value: "0.5"
+                - name: DEPENDENCY_THRESHOLD
+                  value: "0.5"
+                - name: USE_PRECISION_MONITORING
+                  value: "false"
+                - name: PRECISION_MONITORING_URL
+                  value: ""
+          restartPolicy: Always
+  processor-deployment.yaml: |-
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: processor
+      labels:
+        app: processor
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: processor
+      template:
+        metadata:
+          name: processor
+          labels:
+            app: processor
+        spec:
+          containers:
+            - name: processor
+              image: harbor.se.internal/hre/aggregation-processor:latest
+              imagePullPolicy: Always
+              resources:
+                requests:
+                  memory: "1Gi"
+                  cpu: "1"
+                limits:
+                  memory: "1Gi"
+                  cpu: "1"
+              env:
+                - name: IS_INCREMENTAL
+                  value: "false"
+                - name: BUCKET_SIZE
+                  value: "100"
+                - name: BOOTSTRAP_SERVER
+                  value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
+                - name: RELEVANCE_THRESHOLDS
+                  value: "10002"
                 - name: TOPIC_NAME
                   value: input
                 - name: GROUP_ID
@@ -44,69 +99,8 @@ data:
                 - name: AND_THRESHOLD
                   value: "0.5"
                 - name: DEPENDENCY_THRESHOLD
-                  value: "0.5"
-                - name: AGGREGATE_COUNT
-                  value: "5"
-                - name: RELEVANCE_THRESHOLD
-                  value: "1"
-                - name: IRRELEVANCE_THRESHOLD
-                  value: "1"
-                - name: PROCESS_MODEL_VARIANT
-                  value: "2"
-                - name: BUCKET_SIZE
-                  value: "50"
-                - name: REFRESH_RATE
-                  value: "1"
-                - name: IS_INCREMENTAL
-                  value: "true"
+                  value: "0.5"                
           restartPolicy: Always
-  #processor-deployment.yaml: |-
-  #  apiVersion: apps/v1
-  #  kind: Deployment
-  #  metadata:
-  #    name: processor
-  #    labels:
-  #      app: processor
-  #  spec:
-  #    replicas: 1
-  #    selector:
-  #      matchLabels:
-  #        app: processor
-  #    template:
-  #      metadata:
-  #        name: processor
-  #        labels:
-  #          app: processor
-  #      spec:
-  #        containers:
-  #          - name: processor
-  #            image: harbor.se.internal/hre/aggregation-processor:latest
-  #            imagePullPolicy: Always
-  #            resources:
-  #              requests:
-  #                memory: "1Gi"
-  #                cpu: "1"
-  #              limits:
-  #                memory: "1Gi"
-  #                cpu: "1"
-  #            env:
-  #              - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
-  #                value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
-  #              - name: RELEVANCE_THRESHOLD
-  #                value: "3"
-  #              - name: BUCKET_SIZE
-  #                value: "20"
-  #              - name: BOOTSTRAP_SERVER
-  #                value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
-  #              - name: TOPIC_NAME
-  #                value: input
-  #              - name: GROUP_ID
-  #                value: default
-  #              - name: AND_THRESHOLD
-  #                value: "0.5"
-  #              - name: DEPENDENCY_THRESHOLD
-  #                value: "0.8"
-  #        restartPolicy: Always
   source-deployment.yaml: |-
     apiVersion: apps/v1
     kind: StatefulSet
@@ -115,7 +109,7 @@ data:
       labels:
         app: source
     spec:
-      replicas: 1
+      replicas: 5
       selector:
         matchLabels:
           app: source
@@ -130,8 +124,6 @@ data:
               image: harbor.se.internal/hre/simple-data-generator:latest
               imagePullPolicy: Always
               env:
-                - name: SPRING_KAFKA_BOOTSTRAP-SERVERS
-                  value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
                 - name: BOOTSTRAP_SERVER
                   value: theodolite-kafka-kafka-bootstrap.theodolite-stu232544.svc.cluster.local:9092
                 - name: TOPIC_NAME

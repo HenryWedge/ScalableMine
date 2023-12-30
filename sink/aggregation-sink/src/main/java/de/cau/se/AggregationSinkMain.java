@@ -1,7 +1,8 @@
 package de.cau.se;
 
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
+import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModelFactory;
@@ -28,21 +29,21 @@ public class AggregationSinkMain {
                     new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
-                            new MicroBatchRelationCountMap<>()),
+                            new CountBasedRelationCountMap<>()),
                     new EventRelationLogger(),
                     new PrecisionChecker(usePrecisionMonitoring, precisionMonitoringUrl),
-                    ProcessModelFactory.create(processModelVariant));
+                    ProcessModelFactory.create(processModelVariant), new MinedProcessModel());
 
             aggregationSink.run();
         } else {
             final AggregationSinkLossyCounting aggregationSink = new AggregationSinkLossyCounting(
                     new KafkaConsumer<>(bootstrapServers, topic, groupId, ResultDeserializer.class),
-                    new MicroBatchRelationCountMap<>(),
+                    new CountBasedRelationCountMap<>(),
                     refreshRate,
                     new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
-                            new MicroBatchRelationCountMap<>()),
+                            new CountBasedRelationCountMap<>()),
                     new EventRelationLogger(),
                     new PrecisionChecker(usePrecisionMonitoring, precisionMonitoringUrl),
                     ProcessModelFactory.create(processModelVariant));

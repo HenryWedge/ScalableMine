@@ -1,9 +1,8 @@
 package de.cau.se;
 
 import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
-import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
 
 public class AggregationProcessorMain {
@@ -22,6 +21,6 @@ public class AggregationProcessorMain {
                 new DirectlyFollowsRelationCountMap(),
                 new TraceIdMap(),
                 bucketSize,
-                new ModelUpdateService(andThreshold, dependencyThreshold, new MicroBatchRelationCountMap<>())).run();
+                new ModelUpdateService(andThreshold, dependencyThreshold, new CountBasedRelationCountMap<>())).run();
     }
 }

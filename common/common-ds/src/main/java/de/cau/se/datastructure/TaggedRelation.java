@@ -1,5 +1,8 @@
 package de.cau.se.datastructure;
 
+/**
+ * A {@link DirectlyFollowsRelation} together with a tag of RELEVANT or IRRELEVANT
+ */
 public class TaggedRelation {
 
     private DirectlyFollowsRelation directlyFollowsRelation;

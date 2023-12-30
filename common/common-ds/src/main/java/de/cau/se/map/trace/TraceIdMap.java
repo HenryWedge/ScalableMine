@@ -2,6 +2,9 @@ package de.cau.se.map.trace;
 
 import java.util.HashMap;
 
+/**
+ * This map keeps track of the last activity observed for a trace id.
+ */
 public class TraceIdMap extends HashMap<Integer, String> {
 
     public String accept(final Integer traceId, final String activity) {

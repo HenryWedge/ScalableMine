@@ -6,25 +6,25 @@ import java.util.Objects;
 
 public class Gateway implements Pattern {
     private GatewayType gatewayType;
-    private String connectingEvent;
+    private String connectingActivity;
     private BranchPair branchPair;
 
     public Gateway() {
     }
 
-    public Gateway(final GatewayType gatewayType, final String connectingEvent, final BranchPair branchPair) {
+    public Gateway(final GatewayType gatewayType, final String connectingActivity, final BranchPair branchPair) {
         this.gatewayType = gatewayType;
-        this.connectingEvent = connectingEvent;
+        this.connectingActivity = connectingActivity;
         this.branchPair = branchPair;
     }
 
     public boolean isBasedOnDirectlyFollowsRelation(final DirectlyFollowsRelation directlyFollowsRelation) {
         return (GatewayType.SPLIT == gatewayType
-                && connectingEvent.equals(directlyFollowsRelation.getPredecessor())
+                && connectingActivity.equals(directlyFollowsRelation.getPredecessor())
                 && (branchPair.getBranch1().equals(directlyFollowsRelation.getSuccessor())
                 || branchPair.getBranch2().equals(directlyFollowsRelation.getSuccessor())))
                 || (GatewayType.JOIN == gatewayType
-                && connectingEvent.equals(directlyFollowsRelation.getSuccessor())
+                && connectingActivity.equals(directlyFollowsRelation.getSuccessor())
                 && (branchPair.getBranch1().equals(directlyFollowsRelation.getPredecessor())
                 || branchPair.getBranch2().equals(directlyFollowsRelation.getPredecessor())));
     }
@@ -38,19 +38,19 @@ public class Gateway implements Pattern {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Gateway gateway = (Gateway) o;
-        return gatewayType == gateway.gatewayType && Objects.equals(connectingEvent, gateway.connectingEvent) && Objects.equals(branchPair, gateway.branchPair);
+        return gatewayType == gateway.gatewayType && Objects.equals(connectingActivity, gateway.connectingActivity) && Objects.equals(branchPair, gateway.branchPair);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(gatewayType, connectingEvent, branchPair);
+        return Objects.hash(gatewayType, connectingActivity, branchPair);
     }
 
     @Override
     public String toString() {
         return "Gateway{" +
                 "gatewayType=" + gatewayType +
-                ", connectingEvent='" + connectingEvent + '\'' +
+                ", connectingActivity='" + connectingActivity + '\'' +
                 ", branchPair=" + branchPair +
                 '}';
     }
@@ -63,12 +63,12 @@ public class Gateway implements Pattern {
         this.gatewayType = gatewayType;
     }
 
-    public String getConnectingEvent() {
-        return connectingEvent;
+    public String getConnectingActivity() {
+        return connectingActivity;
     }
 
-    public void setConnectingEvent(String connectingEvent) {
-        this.connectingEvent = connectingEvent;
+    public void setConnectingActivity(String connectingActivity) {
+        this.connectingActivity = connectingActivity;
     }
 
     public BranchPair getBranchPair() {

@@ -18,6 +18,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Calculates the similarity of two process models with the Jaccard coefficient.
+ * It sends requests to the precision monitor server when it is enabled.
+ */
 public class PrecisionChecker {
 
     private final ObjectMapper objectMapper;
@@ -73,9 +77,5 @@ public class PrecisionChecker {
         } catch (UnsupportedEncodingException | JsonProcessingException  e) {
             // ignore: lost updates are acceptable
         }
-    }
-
-    private <T> long countMatches(final Set<T> actual, final Set<T> expected) {
-        return actual.stream().filter(expected::contains).count();
     }
 }

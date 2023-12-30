@@ -5,6 +5,9 @@ import de.cau.se.marker.Pattern;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+/**
+ * Represents a directly follows relation with predecessor and successor
+ */
 public class DirectlyFollowsRelation implements Pattern {
     private String predecessor;
     private String successor;

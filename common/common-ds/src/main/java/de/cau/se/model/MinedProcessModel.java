@@ -7,6 +7,7 @@ import de.cau.se.processmodel.ProcessModel;
 import java.util.HashSet;
 import java.util.Set;
 
+
 public class MinedProcessModel implements ProcessModel {
     private Set<DirectlyFollowsRelation> causalEvents;
     private Set<Gateway> andGateways;

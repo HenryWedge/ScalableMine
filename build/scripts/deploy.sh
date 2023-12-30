@@ -4,7 +4,11 @@ kubectl apply -f ../theodolite/benchmark.yaml
 kubectl apply -f ../theodolite/configmap.yaml
 kubectl apply -f ../theodolite/execution.yaml
 echo "Execution deployed. Listing all executions:"
-#kubectl logs -l app=theodolite -c theodolite -f
-sleep 10
-echo "Sink Log:"
-kubectl logs -l app=sink -f
+kubectl logs -l app=theodolite -c theodolite -f
+if [ -z $1 ]; then
+  sleep 10
+  echo "Sink Log:"
+  kubectl logs -l app=sink -f
+else
+  kubectl logs -l app=theodolite -c theodolite -f
+fi

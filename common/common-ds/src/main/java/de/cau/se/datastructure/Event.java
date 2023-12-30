@@ -5,6 +5,10 @@ import org.deckfour.xes.model.XEvent;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * Represents a pair of trace id and activity as event.
+ * The timestamp is omitted because it is not needed for the algorithms until now.
+ */
 public class Event implements Serializable {
     private int traceId;
     private String activity;

@@ -3,7 +3,7 @@ package de.cau.se;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.map.result.LossyCountingRelationCountMap;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.model.CountBasedMinedProcessModel;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
@@ -63,7 +63,7 @@ public class FilterSinkLossyCounting extends AbstractConsumer<MinedProcessModel>
         receivedEvents++;
     }
 
-    private <T> void updateModelFromCollectedPattern(final LossyCountingRelationCountMap<T> storedRelation, final MicroBatchRelationCountMap<T> modelRelation, final int currentBucketId) {
+    private <T> void updateModelFromCollectedPattern(final LossyCountingRelationCountMap<T> storedRelation, final CountBasedRelationCountMap<T> modelRelation, final int currentBucketId) {
         storedRelation.removeIrrelevant(currentBucketId);
         storedRelation.keySet().forEach(pattern -> modelRelation.insertOrUpdate(pattern, 1));
         storedRelation.clear();

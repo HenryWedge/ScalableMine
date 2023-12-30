@@ -1,7 +1,7 @@
 package model;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ public class ModelUpdateServiceTest {
 
     @Test
     public void testUpdate() {
-        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.3, new MicroBatchRelationCountMap<>());
+        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.3, new CountBasedRelationCountMap<>());
         MinedProcessModel processModel = new MinedProcessModel();
         testee.update(processModel, new DirectlyFollowsRelation("A", "B"));
         testee.update(processModel, new DirectlyFollowsRelation("B", "C"));
@@ -32,7 +32,7 @@ public class ModelUpdateServiceTest {
 
     @Test
     public void testUpdateWithCount() {
-        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.5, new MicroBatchRelationCountMap<>());
+        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.5, new CountBasedRelationCountMap<>());
         MinedProcessModel processModel = new MinedProcessModel();
         testee.update(processModel, new DirectlyFollowsRelation("A", "B"), 7);
         testee.update(processModel, new DirectlyFollowsRelation("B", "C"), 3);
@@ -48,7 +48,7 @@ public class ModelUpdateServiceTest {
 
     @Test
     public void testUpdateWithCountAndEmptyActivitiesToUpdate() {
-        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.5, new MicroBatchRelationCountMap<>());
+        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.5, new CountBasedRelationCountMap<>());
         MinedProcessModel processModel = new MinedProcessModel();
         testee.update(processModel, new DirectlyFollowsRelation("A", "B"), 7, new HashSet<>());
         testee.update(processModel, new DirectlyFollowsRelation("B", "C"), 3, new HashSet<>());
@@ -64,7 +64,7 @@ public class ModelUpdateServiceTest {
 
     @Test
     public void testUpdateWithCountAndActivitiesToUpdate() {
-        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.5, new MicroBatchRelationCountMap<>());
+        final ModelUpdateService testee = new ModelUpdateService(0.1, 0.5, new CountBasedRelationCountMap<>());
         MinedProcessModel processModel = new MinedProcessModel();
         testee.update(processModel, new DirectlyFollowsRelation("A", "B"), 7, Set.of("A", "B"));
         testee.update(processModel, new DirectlyFollowsRelation("B", "C"), 3, Set.of("A", "B", "C"));

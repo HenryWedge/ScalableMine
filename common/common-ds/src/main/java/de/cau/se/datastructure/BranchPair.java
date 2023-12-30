@@ -2,6 +2,10 @@ package de.cau.se.datastructure;
 
 import java.util.Objects;
 
+/**
+ * This class represents a Pair of two branches.
+ * The order of those branches is not relevant for the equality of BranchPairs.
+ */
 public class BranchPair {
     private String branch1;
     private String branch2;

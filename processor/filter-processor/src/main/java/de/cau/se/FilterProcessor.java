@@ -2,20 +2,14 @@ package de.cau.se;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
-import de.cau.se.datastructure.Result;
 import de.cau.se.datastructure.TaggedRelation;
-import de.cau.se.map.directlyfollows.DirectlyFollowsRelationCountMap;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 
 public class FilterProcessor extends AbstractProcessor<Event, TaggedRelation> {
 
-    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> directlyFollowsCountMap;
+    private final CountBasedRelationCountMap<DirectlyFollowsRelation> directlyFollowsCountMap;
 
     private final TraceIdMap traceIdEventMap;
 
@@ -32,7 +26,7 @@ public class FilterProcessor extends AbstractProcessor<Event, TaggedRelation> {
                            final Integer relevanceThreshold,
                            final Integer irrelevanceThreshold) {
         super(sender, consumer);
-        this.directlyFollowsCountMap = new MicroBatchRelationCountMap<>();
+        this.directlyFollowsCountMap = new CountBasedRelationCountMap<>();
         this.traceIdEventMap = traceIdEventMap;
         this.bucketSize = bucketSize;
         this.relevanceThreshold = relevanceThreshold;

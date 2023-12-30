@@ -1,12 +1,9 @@
 package de.cau.se.model;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.cau.se.datastructure.BranchPair;
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
 import de.cau.se.map.result.RelationCountMap;
-import de.cau.se.processmodel.MediumProcessModel;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -129,14 +126,14 @@ public class ModelUpdateService {
     private void mineGateway(final MinedProcessModel processModel,
                              final Set<String> frequentActivities,
                              final Double andThreshold,
-                             final Function<DirectlyFollowsRelation, String> extractConnectingEvent,
+                             final Function<DirectlyFollowsRelation, String> extractConnectingActivity,
                              final Function<DirectlyFollowsRelation, String> extractBranchEvent,
                              final Gateway.GatewayType gatewayType) {
 
         for (final String activity : frequentActivities) {
             final Set<DirectlyFollowsRelation> potentialSplits = new HashSet<>();
             for (final DirectlyFollowsRelation directlyFollowsRelation : processModel.getCausalEvents()) {
-                if (activity.equals(extractConnectingEvent.apply(directlyFollowsRelation))) {
+                if (activity.equals(extractConnectingActivity.apply(directlyFollowsRelation))) {
                     potentialSplits.add(directlyFollowsRelation);
                 }
             }
@@ -144,7 +141,7 @@ public class ModelUpdateService {
             for (final DirectlyFollowsRelation branch1 : potentialSplits) {
                 for (final DirectlyFollowsRelation branch2 : potentialSplits) {
 
-                    final String connectingEvent = extractConnectingEvent.apply(branch1);
+                    final String connectingEvent = extractConnectingActivity.apply(branch1);
                     final String branchEvent1 = extractBranchEvent.apply(branch1);
                     final String branchEvent2 = extractBranchEvent.apply(branch2);
 

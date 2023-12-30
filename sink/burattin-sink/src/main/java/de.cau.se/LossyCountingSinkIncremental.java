@@ -2,7 +2,7 @@ package de.cau.se;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Event;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.map.trace.TraceIdMap;
 import de.cau.se.model.EventRelationLogger;
 import de.cau.se.model.MinedProcessModel;
@@ -20,7 +20,7 @@ import java.util.Set;
 public class LossyCountingSinkIncremental extends AbstractConsumer<Event> {
     int n = 1;
     private final TraceIdMap traceIdMap = new TraceIdMap();
-    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> directlyFollowsMap = new MicroBatchRelationCountMap<>();
+    private final CountBasedRelationCountMap<DirectlyFollowsRelation> directlyFollowsMap = new CountBasedRelationCountMap<>();
     private final ModelUpdateService modelUpdateService;
     private final EventRelationLogger eventRelationLogger;
     private final PrecisionChecker precisionChecker;

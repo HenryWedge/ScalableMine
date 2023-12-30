@@ -33,14 +33,15 @@ public class AggregationSink extends AbstractConsumer<TaggedRelation> {
                            final ModelUpdateService modelUpdateService,
                            final EventRelationLogger eventRelationLogger,
                            final PrecisionChecker precisionChecker,
-                           final ProcessModel originalProcessModel) {
+                           final ProcessModel originalProcessModel,
+                           final MinedProcessModel minedProcessModel) {
         super(consumer);
         this.relationBuffer = new HashSet<>();
         this.refreshRate = refreshRate;
         this.modelUpdateService = modelUpdateService;
         this.eventRelationLogger = eventRelationLogger;
         this.precisionChecker = precisionChecker;
-        this.processModel = new MinedProcessModel();
+        this.processModel = minedProcessModel;
         this.originalProcessModel = originalProcessModel;
     }
 

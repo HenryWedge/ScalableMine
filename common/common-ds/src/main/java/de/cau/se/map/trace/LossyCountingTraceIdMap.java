@@ -4,6 +4,10 @@ import de.cau.se.map.result.FrequencyDeltaPair;
 
 import java.util.HashMap;
 
+/**
+ * This map keeps track of the last activity observed for a trace id.
+ * This is according to the algorithm of the heuristics miner lossy counting.
+ */
 public class LossyCountingTraceIdMap extends HashMap<Integer, LossyCountingTraceIdMap.Entry> {
 
     public void insertOrUpdate(final Integer key, final String activity, final int newDelta) {

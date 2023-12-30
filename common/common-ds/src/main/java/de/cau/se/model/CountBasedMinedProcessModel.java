@@ -2,31 +2,34 @@ package de.cau.se.model;
 
 import de.cau.se.datastructure.DirectlyFollowsRelation;
 import de.cau.se.datastructure.Gateway;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.processmodel.ProcessModel;
 
 import java.util.*;
 
+/**
+ * Class that stores the behavioral patterns of a process model with their number of occurrences.
+ */
 public class CountBasedMinedProcessModel implements ProcessModel {
-    private final MicroBatchRelationCountMap<DirectlyFollowsRelation> causalEvents;
-    private final MicroBatchRelationCountMap<Gateway> andGateways;
-    private final MicroBatchRelationCountMap<Gateway> xorGateways;
+    private final CountBasedRelationCountMap<DirectlyFollowsRelation> causalEvents;
+    private final CountBasedRelationCountMap<Gateway> andGateways;
+    private final CountBasedRelationCountMap<Gateway> xorGateways;
 
     public CountBasedMinedProcessModel() {
-        this.causalEvents = new MicroBatchRelationCountMap<>();
-        this.andGateways = new MicroBatchRelationCountMap<>();
-        this.xorGateways = new MicroBatchRelationCountMap<>();
+        this.causalEvents = new CountBasedRelationCountMap<>();
+        this.andGateways = new CountBasedRelationCountMap<>();
+        this.xorGateways = new CountBasedRelationCountMap<>();
     }
 
-    public MicroBatchRelationCountMap<DirectlyFollowsRelation> getCausalEventMap() {
+    public CountBasedRelationCountMap<DirectlyFollowsRelation> getCausalEventMap() {
         return causalEvents;
     }
 
-    public MicroBatchRelationCountMap<Gateway> getAndGateways() {
+    public CountBasedRelationCountMap<Gateway> getAndGateways() {
         return andGateways;
     }
 
-    public MicroBatchRelationCountMap<Gateway> getXorGateways() {
+    public CountBasedRelationCountMap<Gateway> getXorGateways() {
         return xorGateways;
     }
 

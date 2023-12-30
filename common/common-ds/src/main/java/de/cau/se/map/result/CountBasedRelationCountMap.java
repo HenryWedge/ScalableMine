@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MicroBatchRelationCountMap<K> extends HashMap<K, Integer> implements RelationCountMap<K, Integer> {
+public class CountBasedRelationCountMap<K> extends HashMap<K, Integer> implements RelationCountMap<K, Integer> {
 
     @Override
     public void insertOrUpdate(final K key, final Integer count) {

@@ -6,14 +6,14 @@ spec:
   benchmark: "kafka-benchmark"
   load:
     loadType: "EventsPerSecond"
-    loadValues: [3000, 3500, 4000, 4500, 5000]
+    loadValues: [150000]
   resources:
-    resourceType: "Instances"
-    resourceValues: [1]
+    resourceType: "BucketSize"
+    resourceValues: [200]
   slos:
     - name: "lag trend"
       properties:
-        consumerGroup: default # output-group
+        consumerGroup: output-group
         threshold: 100
   execution:
     metric: "capacity"
@@ -24,7 +24,7 @@ spec:
       searchStrategy: "BinarySearch"
     duration: 90 # in seconds
     repetitions: 1
-    loadGenerationDelay: 30 # in seconds
+    loadGenerationDelay: 15 # in seconds
   configOverrides:
     #- patcher:
     #    type: "NodeSelectorPatcher"

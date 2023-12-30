@@ -1,5 +1,8 @@
 package de.cau.se.datastructure;
 
+/**
+ * The result maps a {@link DirectlyFollowsRelation} to the number of its occurrences.
+ */
 public class Result {
     private DirectlyFollowsRelation directlyFollowsRelation;
     private Integer count;

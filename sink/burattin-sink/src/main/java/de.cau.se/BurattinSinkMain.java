@@ -1,9 +1,8 @@
 package de.cau.se;
 
 import de.cau.se.map.result.LossyCountingRelationCountMap;
-import de.cau.se.map.result.MicroBatchRelationCountMap;
+import de.cau.se.map.result.CountBasedRelationCountMap;
 import de.cau.se.model.EventRelationLogger;
-import de.cau.se.model.MinedProcessModel;
 import de.cau.se.model.ModelUpdateService;
 import de.cau.se.model.PrecisionChecker;
 import de.cau.se.processmodel.ProcessModelFactory;
@@ -36,7 +35,7 @@ public class BurattinSinkMain {
                     new ModelUpdateService(
                             andThreshold,
                             dependencyThreshold,
-                            new MicroBatchRelationCountMap<>()),
+                            new CountBasedRelationCountMap<>()),
                     new EventRelationLogger(),
                     new PrecisionChecker(usePrecisionMonitoring, precisionMonitoringUrl),
                     refreshRate,
